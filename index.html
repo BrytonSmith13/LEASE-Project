@@ -1184,13 +1184,13 @@ textarea { resize: vertical; min-height: 80px; }
 </div>
 
 <!-- MY PROFILE MODAL -->
-<div class="overlay" id="my-profile-overlay" onclick="closeIfOverlay(event,'my-profile')" style="align-items:flex-start;overflow-y:auto;padding:0">
-  <div style="background:var(--surface);width:100%;max-width:900px;margin:0 auto;min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,0.15);animation:fadeUp 0.25s ease both">
+<div id="my-profile-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(28,27,25,0.5);backdrop-filter:blur(4px);overflow-y:auto;">
+  <div style="background:var(--surface);width:100%;max-width:900px;margin:0 auto;min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,0.15);" onclick="event.stopPropagation()">
     <div style="position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;padding:16px 32px">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">My Profile</div>
       <button class="modal-close" onclick="closeModal('my-profile')" style="width:34px;height:34px">✕</button>
     </div>
-    <div id="profile-content"></div>
+    <div id="profile-content" style="min-height:500px"></div>
   </div>
 </div>
 
@@ -2575,13 +2575,13 @@ async function renderProfilePage(userId, isOwner) {
         <div style="width:88px;height:88px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);box-shadow:0 4px 20px rgba(0,0,0,0.15);overflow:hidden">
           ${avatarHtml}
         </div>
-        ${isOwner ? `<div onclick="openModal('account-settings')" title="Edit photo" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--ink);color:#fff;border:2px solid var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer">✏️</div>` : ''}
+        ${isOwner ? `<div onclick="openModal(&quot;account-settings&quot;)" title="Edit photo" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--ink);color:#fff;border:2px solid var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer">✏️</div>` : ''}
       </div>
 
       <!-- ACTION BUTTONS -->
       <div style="float:right;margin-top:12px;display:flex;gap:8px">
         ${isOwner
-          ? `<button class="btn btn-outline" onclick="openModal('account-settings')">✏️ Edit Profile</button>
+          ? `<button class="btn btn-outline" onclick="openModal(&quot;account-settings&quot;)">✏️ Edit Profile</button>
              <button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>`
           : `<button class="btn btn-primary" onclick="openChat('${userId}')">💬 Message</button>`}
       </div>
@@ -2647,7 +2647,7 @@ async function renderProfilePage(userId, isOwner) {
             <div style="font-size:42px;margin-bottom:14px">🏠</div>
             <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:8px">${isOwner ? 'You have no active listings' : 'No active listings'}</div>
             <div style="font-size:13px;margin-bottom:20px">${isOwner ? 'Post your first listing to get started.' : 'This user has no active listings right now.'}</div>
-            ${isOwner ? `<button class="btn btn-primary" onclick="closeModal('my-profile');openModal('post')">+ Post a Listing</button>` : ''}
+            ${isOwner ? `<button class="btn btn-primary" onclick="closeModal(&quot;my-profile&quot;);openModal(&quot;post&quot;)">+ Post a Listing</button>` : ''}
           </div>`
         : `<div class="listings">${activeListings.map(listingCardHtml).join('')}</div>`}
     </div>
@@ -2866,8 +2866,159 @@ function renderMyProfilePage() {
 
 async function openMyProfileModal() {
   if (!currentUser) { openModal('auth'); return; }
+  closeDropdown();
   openModal('my-profile');
-  renderProfileFallback();
+  // Small delay to ensure modal is visible before rendering
+  setTimeout(() => renderProfileFallback(), 50);
+}
+
+function buildListingCard(l) {
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.style.cursor = 'pointer';
+  div.onclick = () => { closeModal('my-profile'); openListing(l.id); };
+  const imgContent = l.photo_url
+    ? '<img src="' + l.photo_url + '" style="width:100%;height:100%;object-fit:cover">'
+    : '<span class="card-img-placeholder">🏠</span>';
+  const badgeLabel = l.type === 'sublease' ? 'Sublease' : 'Full Transfer';
+  const roomLabel = l.room_type === 'private' ? '🚪 Private' : l.room_type === 'shared' ? '👥 Shared' : '🏠 Studio';
+  div.innerHTML =
+    '<div class="card-img">' + imgContent +
+    '<div class="card-badge badge-' + l.type + '">' + badgeLabel + '</div></div>' +
+    '<div class="card-body">' +
+      '<div class="card-price">$' + l.rent.toLocaleString() + '<span>/mo</span></div>' +
+      '<div class="card-addr">📍 ' + l.address + '</div>' +
+      '<div class="card-tags"><span class="tag tag-accent">' + (l.school||'') + '</span>' +
+      '<span class="tag">' + roomLabel + '</span></div>' +
+      '<div style="margin-top:10px;display:flex;gap:6px">' +
+        '<button class="btn btn-outline" style="flex:1;font-size:11px;padding:6px;color:var(--green);border-color:var(--green)" ' +
+        'onclick="event.stopPropagation();showSuccessFeeModal(\'' + l.id + '\')" >🎉 Mark Transferred</button>' +
+        '<button class="btn btn-ghost" style="font-size:11px;padding:6px;color:#C44A3A" ' +
+        'onclick="event.stopPropagation();deleteListing(\'' + l.id + '\')" >🗑</button>' +
+      '</div>' +
+    '</div>';
+  return div;
+}
+
+function buildListingGrid(grid, listings) {
+  grid.innerHTML = '';
+  listings.forEach(l => grid.appendChild(buildListingCard(l)));
+}
+
+function renderProfileFallback() {
+  const container = document.getElementById('profile-content');
+  if (!container) { console.error('No profile-content div!'); return; }
+
+  const email = currentUser?.email || '';
+  const name = currentProfile?.name || email.split('@')[0] || 'User';
+  const initials = name.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
+  const school = currentProfile?.school || '';
+  const bio = currentProfile?.bio || '';
+  const phone = currentProfile?.phone || '';
+  const instagram = currentProfile?.instagram || '';
+  const snapchat = currentProfile?.snapchat || '';
+  const isVerified = email.toLowerCase().endsWith('.edu');
+
+  const avatarContent = currentProfile?.avatar_url
+    ? '<img src="' + currentProfile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
+    : '<span style="font-family:Syne,sans-serif;font-size:30px;font-weight:700;color:#fff">' + initials + '</span>';
+
+  const html = '<div style="background:linear-gradient(135deg,#2A7A52,#0d3d28);height:130px"></div>'
+    + '<div style="padding:0 32px 32px">'
+    + '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:-44px;margin-bottom:20px">'
+    + '<div style="width:88px;height:88px;border-radius:50%;background:#2A7A52;display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);box-shadow:0 4px 20px rgba(0,0,0,.15);overflow:hidden">'
+    + avatarContent + '</div>'
+    + '<div style="display:flex;gap:8px;padding-bottom:8px">'
+    + '<button class="btn btn-outline" onclick="openModal(&quot;account-settings&quot;)">✏️ Edit Profile</button>'
+    + '<button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>'
+    + '</div></div>'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+    + '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">' + name + '</div>'
+    + (isVerified ? '<span style="background:#E8F5EE;color:#2A7A52;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">✓ Verified Student</span>' : '')
+    + '</div>'
+    + (school ? '<div style="font-size:13px;color:var(--mid);margin-bottom:12px">🎓 ' + school + '</div>' : '')
+    + (bio ? '<div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:16px">' + bio + '</div>'
+           : '<div style="font-size:13px;color:var(--mid);font-style:italic;margin-bottom:16px;opacity:.6">No bio yet — add one in Edit Profile</div>')
+    + '<div style="background:var(--bg);border-radius:14px;padding:18px 20px;margin-bottom:20px">'
+    + '<div style="font-family:Syne,sans-serif;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin-bottom:14px">Contact Info</div>'
+    + '<div style="display:flex;flex-direction:column;gap:12px">'
+    + '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>✉️</span>'
+    + (email ? '<a href="mailto:' + email + '" style="color:var(--accent);text-decoration:none">' + email + '</a>' : '<span style="color:var(--mid);font-style:italic">No email</span>')
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>📞</span>'
+    + (phone ? '<a href="tel:' + phone + '" style="color:var(--accent);text-decoration:none">' + phone + '</a>' : '<span style="color:var(--mid);font-style:italic">No phone — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add</button></span>')
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>📸</span>'
+    + (instagram ? '<a href="https://instagram.com/' + instagram.replace('@','') + '" target="_blank" style="color:var(--accent);text-decoration:none">' + instagram + '</a>' : '<span style="color:var(--mid);font-style:italic">No Instagram — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add</button></span>')
+    + '</div>'
+    + '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>👻</span>'
+    + (snapchat ? '<span>' + snapchat + '</span>' : '<span style="color:var(--mid);font-style:italic">No Snapchat — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add</button></span>')
+    + '</div>'
+    + '</div></div>'
+    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">'
+    + '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-active-count" style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">—</div><div style="font-size:11px;color:var(--mid)">Active listings</div></div>'
+    + '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-completed-count" style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">—</div><div style="font-size:11px;color:var(--mid)">Completed</div></div>'
+    + '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-reviews-count" style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">—</div><div style="font-size:11px;color:var(--mid)">Reviews</div></div>'
+    + '</div>'
+    + '<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;margin-bottom:16px">My Listings</div>'
+    + '<div id="pf-listings-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">'
+    + '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)">Loading listings…</div>'
+    + '</div>'
+    + '</div>';
+
+  container.innerHTML = html;
+
+  // Load stats and listings from Supabase async
+  if (typeof _sb !== 'undefined' && _sb && currentUser) {
+    _sb.from('listings').select('*').eq('user_id', currentUser.id)
+      .then(function(res) {
+        var data = res.data || [];
+        var active = data.filter(function(l) { return l.is_active; });
+        var past = data.filter(function(l) { return !l.is_active; });
+        var elA = document.getElementById('pf-active-count');
+        var elP = document.getElementById('pf-completed-count');
+        if (elA) elA.textContent = active.length;
+        if (elP) elP.textContent = past.length;
+        var grid = document.getElementById('pf-listings-grid');
+        if (!grid) return;
+        if (active.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)">'
+            + '<div style="font-size:36px;margin-bottom:10px">🏠</div>'
+            + '<div style="font-weight:600;margin-bottom:12px">No active listings yet</div>'
+            + '<button class="btn btn-primary" onclick="closeModal(&quot;my-profile&quot;);openModal(&quot;post&quot;)">+ Post a Listing</button>'
+            + '</div>';
+        } else {
+          grid.innerHTML = '';
+          active.forEach(function(l) { grid.appendChild(buildListingCard(l)); });
+        }
+      }).catch(function(e) { console.warn('listings error', e); });
+
+    _sb.from('reviews').select('id', { count: 'exact' }).eq('reviewee_id', currentUser.id)
+      .then(function(res) {
+        var el = document.getElementById('pf-reviews-count');
+        if (el) el.textContent = res.count || 0;
+      }).catch(function(e) { console.warn('reviews error', e); });
+  } else {
+    var elA = document.getElementById('pf-active-count');
+    var elP = document.getElementById('pf-completed-count');
+    var elR = document.getElementById('pf-reviews-count');
+    if (elA) elA.textContent = '0';
+    if (elP) elP.textContent = '0';
+    if (elR) elR.textContent = '0';
+    var grid = document.getElementById('pf-listings-grid');
+    if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)">'
+      + '<button class="btn btn-primary" onclick="closeModal(&quot;my-profile&quot;);openModal(&quot;post&quot;)">+ Post a Listing</button>'
+      + '</div>';
+  }
+}
+
+
+async function openMyProfileModal() {
+  if (!currentUser) { openModal('auth'); return; }
+  closeDropdown();
+  openModal('my-profile');
+  // Small delay to ensure modal is visible before rendering
+  setTimeout(() => renderProfileFallback(), 50);
 }
 
 function buildListingCard(l) {
@@ -2931,10 +3082,10 @@ function renderProfileFallback() {
           <div style="width:88px;height:88px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);box-shadow:0 4px 20px rgba(0,0,0,0.15);overflow:hidden">
             ${avatarBg}
           </div>
-          <div onclick="openModal('account-settings')" title="Change photo" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--ink);color:#fff;border:2px solid var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer">✏️</div>
+          <div onclick="openModal(&quot;account-settings&quot;)" title="Change photo" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--ink);color:#fff;border:2px solid var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer">✏️</div>
         </div>
         <div style="display:flex;gap:8px;padding-bottom:8px">
-          <button class="btn btn-outline" onclick="openModal('account-settings')">✏️ Edit Profile</button>
+          <button class="btn btn-outline" onclick="openModal(&quot;account-settings&quot;)">✏️ Edit Profile</button>
           <button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>
         </div>
       </div>

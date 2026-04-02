@@ -1,0 +1,3192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lease — College Lease Marketplace</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F0E8;
+  --surface: #FDF9F3;
+  --ink: #1C1B19;
+  --mid: #7A7060;
+  --rule: #E0D8CC;
+  --accent: #2A7A52;
+  --accent-light: #E8F5EE;
+  --green: #2A7A52;
+  --green-light: #E8F5EE;
+  --tag-bg: #EDE8DF;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.08), 0 12px 40px rgba(0,0,0,0.08);
+}
+[data-theme="dark"] {
+  --bg: #0D0D0D;
+  --surface: #161612;
+  --ink: #F0EBE0;
+  --mid: #8A8478;
+  --rule: #2A2822;
+  --accent: #3DB876;
+  --accent-light: #0D2B1A;
+  --green: #3DB876;
+  --green-light: #0D2B1A;
+  --tag-bg: #1E1C18;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: 'Instrument Sans', sans-serif; background: var(--bg); color: var(--ink); font-size: 14px; line-height: 1.5; }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 3px; }
+
+/* NAV */
+nav {
+  position: sticky; top: 0; z-index: 200;
+  background: rgba(245,240,232,0.92);
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--rule);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 32px; height: 58px;
+}
+.logo { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; cursor: pointer; }
+.logo span { color: var(--accent); }
+.nav-links { display: flex; align-items: center; gap: 4px; }
+.nav-link {
+  background: none; border: none; font-family: inherit; font-size: 13px; font-weight: 500;
+  color: var(--mid); padding: 6px 14px; border-radius: 8px; cursor: pointer; transition: all 0.15s;
+}
+.nav-link:hover { background: var(--tag-bg); color: var(--ink); }
+.nav-link.active { background: var(--tag-bg); color: var(--accent); }
+.nav-right { display: flex; align-items: center; gap: 12px; }
+.btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 18px; border-radius: 8px; font-family: inherit; font-size: 13px; font-weight: 500; cursor: pointer; border: none; transition: all 0.15s; text-decoration: none; }
+.btn-ghost { background: transparent; color: var(--mid); }
+.btn-ghost:hover { background: var(--tag-bg); color: var(--ink); }
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: #1f47c7; }
+.btn-outline { background: transparent; border: 1.5px solid var(--rule); color: var(--ink); }
+.btn-outline:hover { border-color: var(--ink); }
+
+/* HERO */
+.hero {
+  padding: 72px 32px 48px;
+  max-width: 1200px; margin: 0 auto;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 12px;
+  animation: fadeUp 0.5s ease both;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.hero h1 { font-family: 'Syne', sans-serif; font-size: clamp(32px, 5vw, 52px); font-weight: 700; letter-spacing: -0.03em; line-height: 1.1; }
+.hero h1 em { font-style: italic; font-family: 'Instrument Sans', sans-serif; font-weight: 300; color: var(--mid); }
+.hero p { font-size: 15px; color: var(--mid); font-weight: 300; max-width: 480px; }
+.hero-stats { display: flex; gap: 32px; margin-top: 8px; }
+.stat { display: flex; flex-direction: column; }
+.stat-num { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; }
+.stat-label { font-size: 12px; color: var(--mid); font-weight: 300; }
+
+/* SEARCH BAR */
+.search-bar {
+  max-width: 1200px; margin: 0 auto 32px; padding: 0 32px;
+  animation: fadeUp 0.5s 0.1s ease both;
+}
+.search-inner {
+  background: var(--surface); border: 1.5px solid var(--rule); border-radius: 14px;
+  display: flex; align-items: center; gap: 0; overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.search-inner:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,91,227,0.1); }
+.search-icon { padding: 0 16px; color: var(--mid); flex-shrink: 0; }
+.search-input { flex: 1; border: none; outline: none; font-family: inherit; font-size: 14px; padding: 14px 0; background: transparent; color: var(--ink); }
+.search-input::placeholder { color: var(--mid); }
+.search-divider { width: 1px; height: 24px; background: var(--rule); flex-shrink: 0; }
+.search-select { border: none; outline: none; font-family: inherit; font-size: 13px; padding: 14px 16px; background: transparent; color: var(--ink); cursor: pointer; appearance: none; -webkit-appearance: none; padding-right: 32px; }
+.search-select-wrap { position: relative; }
+.search-select-wrap::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--mid); font-size: 11px; pointer-events: none; }
+.search-btn { background: var(--accent); color: #fff; border: none; font-family: inherit; font-weight: 500; font-size: 13px; padding: 14px 24px; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
+.search-btn:hover { background: #1f47c7; }
+
+/* LAYOUT */
+.layout {
+  max-width: 1200px; margin: 0 auto; padding: 0 32px 80px;
+  display: grid; grid-template-columns: 260px 1fr; gap: 32px;
+  animation: fadeUp 0.5s 0.15s ease both;
+}
+
+/* FILTERS SIDEBAR */
+.filters { display: flex; flex-direction: column; gap: 0; }
+.filters-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 16px; border-bottom: 1px solid var(--rule); margin-bottom: 24px; }
+.filters-header h3 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; }
+.filter-reset { font-size: 12px; color: var(--accent); cursor: pointer; background: none; border: none; font-family: inherit; }
+.filter-group { margin-bottom: 28px; }
+.filter-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--mid); margin-bottom: 10px; display: block; }
+.filter-options { display: flex; flex-direction: column; gap: 6px; }
+.filter-option { display: flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 0; }
+.filter-option input { accent-color: var(--accent); width: 14px; height: 14px; cursor: pointer; }
+.filter-option span { font-size: 13px; color: var(--ink); }
+.filter-option:hover span { color: var(--accent); }
+.range-row { display: flex; gap: 8px; align-items: center; }
+.range-input { flex: 1; border: 1.5px solid var(--rule); border-radius: 8px; padding: 8px 10px; font-family: inherit; font-size: 13px; color: var(--ink); background: var(--surface); outline: none; transition: border-color 0.2s; }
+.range-input:focus { border-color: var(--accent); }
+.range-sep { color: var(--mid); font-size: 12px; flex-shrink: 0; }
+
+/* HOUSING TYPE PILLS */
+.pill-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.pill {
+  padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  border: 1.5px solid var(--rule); color: var(--mid); cursor: pointer;
+  background: transparent; font-family: inherit; transition: all 0.15s;
+}
+.pill:hover { border-color: var(--accent); color: var(--accent); }
+.pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+/* DISTANCE FILTER */
+.distance-slider-wrap { display: flex; flex-direction: column; gap: 6px; }
+.distance-slider {
+  -webkit-appearance: none; appearance: none;
+  width: 100%; height: 4px; border-radius: 2px; outline: none; cursor: pointer;
+  background: linear-gradient(to right, var(--accent) 0%, var(--accent) 50%, var(--rule) 50%, var(--rule) 100%);
+}
+.distance-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--accent); border: 2px solid var(--surface);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2); cursor: pointer;
+}
+.distance-val-row { display: flex; justify-content: space-between; align-items: center; }
+.distance-val { font-size: 12px; color: var(--accent); font-weight: 600; }
+.distance-val-label { font-size: 11px; color: var(--mid); }
+.tag-housing { background: #FEF3E2; color: #B45309; }
+[data-theme="dark"] .tag-housing { background: #2A1F0A; color: #F59E0B; }
+
+/* MAIN CONTENT */
+.main-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+.results-count { font-size: 13px; color: var(--mid); }
+.results-count strong { color: var(--ink); font-weight: 500; }
+.sort-select { border: 1.5px solid var(--rule); border-radius: 8px; padding: 7px 12px; font-family: inherit; font-size: 13px; color: var(--ink); background: var(--surface); outline: none; cursor: pointer; }
+.sort-select:focus { border-color: var(--accent); }
+
+/* LISTINGS GRID */
+.listings { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+
+/* CARD */
+.card {
+  background: var(--surface); border-radius: 14px; overflow: hidden;
+  border: 1.5px solid var(--rule); box-shadow: var(--shadow);
+  cursor: pointer; transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+.card:hover { transform: translateY(-3px); box-shadow: var(--shadow-hover); border-color: #d0ccc4; }
+.card-img { width: 100%; height: 180px; background: var(--tag-bg); display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.card-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s ease; }
+.card:hover .card-img img { transform: scale(1.04); }
+.card-img-placeholder { font-size: 40px; opacity: 0.3; }
+.card-badge { position: absolute; top: 12px; left: 12px; background: var(--surface); border-radius: 6px; padding: 4px 10px; font-size: 11px; font-weight: 500; letter-spacing: 0.04em; }
+.badge-sublease { color: var(--accent); }
+.badge-transfer { color: var(--green); }
+.card-body { padding: 16px; }
+.card-price { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 2px; }
+.card-price span { font-family: 'Instrument Sans', sans-serif; font-size: 13px; font-weight: 300; color: var(--mid); }
+.card-addr { font-size: 12px; color: var(--mid); margin-bottom: 12px; display: flex; align-items: center; gap: 4px; }
+.card-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.tag { background: var(--tag-bg); border-radius: 6px; padding: 4px 8px; font-size: 11px; color: var(--mid); font-weight: 400; }
+.tag-accent { background: var(--accent-light); color: var(--accent); }
+.tag-green { background: var(--green-light); color: var(--green); }
+.card-footer { display: flex; align-items: center; justify-content: space-between; padding-top: 12px; border-top: 1px solid var(--rule); }
+.card-user { display: flex; align-items: center; gap: 8px; }
+.avatar { width: 26px; height: 26px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--accent); flex-shrink: 0; }
+.card-user-name { font-size: 12px; font-weight: 400; }
+.card-date { font-size: 11px; color: var(--mid); }
+
+/* MODAL OVERLAY */
+.overlay {
+  display: none; position: fixed; inset: 0; z-index: 300;
+  background: rgba(28,27,25,0.5); backdrop-filter: blur(4px);
+  align-items: center; justify-content: center; padding: 20px;
+}
+.overlay.open { display: flex; }
+
+/* AUTH MODAL */
+.modal {
+  background: var(--surface); border-radius: 20px; width: 100%; max-width: 420px;
+  padding: 40px; box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+  animation: modalIn 0.25s ease both;
+  max-height: 90vh; overflow-y: auto;
+}
+@keyframes modalIn { from { opacity: 0; transform: scale(0.96) translateY(8px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.modal-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 28px; }
+.modal-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.modal-sub { font-size: 13px; color: var(--mid); margin-top: 4px; }
+.modal-close { background: var(--tag-bg); border: none; width: 30px; height: 30px; border-radius: 8px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; color: var(--mid); transition: background 0.15s; }
+.modal-close:hover { background: var(--rule); color: var(--ink); }
+.form-group { margin-bottom: 16px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+label { display: block; font-size: 11px; font-weight: 500; letter-spacing: 0.07em; text-transform: uppercase; color: var(--mid); margin-bottom: 6px; }
+input[type=text], input[type=email], input[type=password], input[type=number], input[type=date], select, textarea {
+  width: 100%; border: 1.5px solid var(--rule); border-radius: 10px; padding: 10px 13px;
+  font-family: inherit; font-size: 13px; color: var(--ink); background: var(--surface);
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  appearance: none; -webkit-appearance: none;
+}
+input:focus, select:focus, textarea:focus {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(45,91,227,0.1);
+}
+textarea { resize: vertical; min-height: 80px; }
+.form-switch { text-align: center; margin-top: 20px; font-size: 13px; color: var(--mid); }
+.form-switch a { color: var(--accent); cursor: pointer; text-decoration: none; font-weight: 500; }
+.form-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0; }
+.form-divider::before, .form-divider::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
+.form-divider span { font-size: 12px; color: var(--mid); }
+.btn-full { width: 100%; justify-content: center; padding: 12px; font-size: 14px; border-radius: 10px; }
+.section-label { font-family: 'Syne', sans-serif; font-size: 12px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--mid); padding: 8px 0 12px; border-bottom: 1px solid var(--rule); margin-bottom: 16px; margin-top: 8px; }
+.checkbox-group { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.checkbox-group input { width: 15px; height: 15px; accent-color: var(--accent); }
+.checkbox-group span { font-size: 13px; }
+.fee-note { font-size: 11px; color: var(--mid); margin-top: 4px; }
+.lease-fee-disclaimer {
+  background: var(--accent-light); border: 1.5px solid var(--accent);
+  border-radius: 12px; padding: 14px 16px; margin-top: 4px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.lease-fee-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.lease-fee-text { flex: 1; }
+.lease-fee-title { font-weight: 600; font-size: 13px; color: var(--accent); margin-bottom: 3px; }
+.lease-fee-body { font-size: 12px; color: var(--mid); line-height: 1.6; }
+.lease-fee-amount {
+  font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700;
+  color: var(--accent); margin: 8px 0 2px;
+}
+.lease-fee-amount span { font-family: 'Instrument Sans', sans-serif; font-size: 12px; font-weight: 400; color: var(--mid); }
+.upload-area {
+  border: 2px dashed var(--rule); border-radius: 10px; padding: 24px;
+  text-align: center; cursor: pointer; transition: border-color 0.2s, background 0.2s;
+  color: var(--mid); font-size: 13px;
+}
+.upload-area:hover { border-color: var(--accent); background: var(--accent-light); }
+.photo-thumb { width: 72px; height: 72px; border-radius: 8px; object-fit: cover; border: 2px solid var(--rule); position: relative; display: inline-block; }
+.photo-thumb img { width: 100%; height: 100%; object-fit: cover; border-radius: 6px; display: block; }
+.photo-thumb-remove { position: absolute; top: -6px; right: -6px; background: var(--ink); color: #fff; border: none; border-radius: 50%; width: 18px; height: 18px; font-size: 10px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.upload-icon { font-size: 28px; margin-bottom: 8px; }
+
+/* LISTING MODAL */
+.listing-modal {
+  background: var(--surface); border-radius: 20px; width: 100%; max-width: 680px;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+  animation: modalIn 0.25s ease both;
+  max-height: 90vh; overflow-y: auto;
+}
+.listing-hero { width: 100%; height: 260px; background: var(--tag-bg); display: flex; align-items: center; justify-content: center; font-size: 64px; border-radius: 20px 20px 0 0; }
+.listing-body { padding: 28px 32px 32px; }
+.listing-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; }
+.listing-price { font-family: 'Syne', sans-serif; font-size: 32px; font-weight: 700; }
+.listing-price span { font-family: 'Instrument Sans', sans-serif; font-size: 15px; font-weight: 300; color: var(--mid); }
+.listing-addr { font-size: 14px; color: var(--mid); margin-top: 4px; }
+.listing-school { display: inline-flex; align-items: center; background: var(--accent-light); color: var(--accent); border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 500; margin-top: 6px; }
+.listing-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+.info-item { background: var(--bg); border-radius: 10px; padding: 14px; }
+.info-item-label { font-size: 11px; color: var(--mid); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 4px; }
+.info-item-val { font-weight: 500; font-size: 14px; }
+.fees-section { background: var(--bg); border-radius: 12px; padding: 18px; margin-bottom: 24px; }
+.fees-section h4 { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; margin-bottom: 14px; }
+.fee-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.fee-row:last-child { border: none; font-weight: 500; }
+.contact-section { display: flex; gap: 10px; }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 24px; right: 24px; z-index: 500;
+  background: var(--ink); color: #fff; border-radius: 10px; padding: 12px 20px;
+  font-size: 13px; font-weight: 400; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  transform: translateY(20px); opacity: 0; transition: all 0.3s;
+  pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.success { background: var(--green); }
+
+/* TABS */
+.modal-tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid var(--rule); }
+.modal-tab { padding: 10px 20px; font-size: 14px; font-weight: 400; color: var(--mid); cursor: pointer; border: none; background: none; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
+.modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
+
+/* EMPTY STATE */
+.empty { text-align: center; padding: 80px 20px; color: var(--mid); }
+.empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+.empty h3 { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 600; color: var(--ink); margin-bottom: 8px; }
+
+/* ZIP BAR */
+.zip-bar {
+  display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin-top: 8px;
+}
+.zip-input-wrap {
+  display: flex; align-items: center; gap: 8px;
+  background: var(--surface); border: 1.5px solid var(--rule);
+  border-radius: 10px; padding: 8px 14px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-shadow: var(--shadow);
+}
+.zip-input-wrap:focus-within {
+  border-color: var(--accent); box-shadow: 0 0 0 3px rgba(42,122,82,0.12);
+}
+.zip-icon { font-size: 14px; flex-shrink: 0; }
+.zip-input {
+  border: none; outline: none; font-family: inherit; font-size: 14px;
+  color: var(--ink); background: transparent; width: 140px;
+}
+.zip-input::placeholder { color: var(--mid); }
+.zip-distance-wrap {
+  display: flex; align-items: center; gap: 10px;
+  background: var(--surface); border: 1.5px solid var(--rule);
+  border-radius: 10px; padding: 8px 16px;
+  box-shadow: var(--shadow); animation: fadeUp 0.2s ease both;
+}
+.zip-dist-label { font-size: 12px; color: var(--mid); white-space: nowrap; }
+.zip-dist-slider { width: 120px; }
+.zip-dist-val { font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap; min-width: 44px; }
+.zip-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--accent-light); color: var(--accent);
+  border-radius: 8px; padding: 4px 10px; font-size: 12px; font-weight: 500;
+  margin-left: 4px;
+}
+
+/* LOCATION FILTER TABS */
+.loc-filter { margin-top: 12px; }
+.loc-tabs {
+  display: inline-flex; background: var(--tag-bg); border-radius: 10px; padding: 3px; gap: 2px; margin-bottom: 10px;
+}
+.loc-tab {
+  padding: 7px 16px; border-radius: 8px; font-family: inherit; font-size: 12px; font-weight: 500;
+  border: none; cursor: pointer; background: transparent; color: var(--mid); transition: all 0.18s;
+}
+.loc-tab.active { background: var(--surface); color: var(--accent); box-shadow: 0 1px 4px rgba(0,0,0,0.10); }
+.loc-panel { animation: fadeUp 0.18s ease both; }
+.loc-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.loc-school-wrap { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1.5px solid var(--rule); border-radius: 10px; padding: 4px 4px 4px 12px; box-shadow: var(--shadow); transition: border-color 0.2s; }
+.loc-school-wrap:focus-within { border-color: var(--accent); }
+.loc-school-select { border: none; outline: none; font-family: inherit; font-size: 14px; color: var(--ink); background: transparent; padding: 6px 4px; cursor: pointer; min-width: 200px; }
+
+/* FEE DISCLOSURE */
+.fee-disclosure {
+  display: flex; gap: 12px; align-items: flex-start;
+  background: var(--accent-light); border: 1.5px solid rgba(42,122,82,0.2);
+  border-radius: 12px; padding: 14px 16px; margin-top: 16px;
+}
+[data-theme="dark"] .fee-disclosure { border-color: rgba(61,184,118,0.2); }
+
+/* Dark mode: native select dropdowns, inputs, textareas */
+[data-theme="dark"] select,
+[data-theme="dark"] select option,
+[data-theme="dark"] input[type=text],
+[data-theme="dark"] input[type=email],
+[data-theme="dark"] input[type=password],
+[data-theme="dark"] input[type=number],
+[data-theme="dark"] input[type=date],
+[data-theme="dark"] textarea {
+  background-color: #1E1C18;
+  color: #F0EBE0;
+  border-color: #2A2822;
+  color-scheme: dark;
+}
+[data-theme="dark"] select option {
+  background-color: #1E1C18;
+  color: #F0EBE0;
+}
+[data-theme="dark"] .search-select,
+[data-theme="dark"] .sort-select,
+[data-theme="dark"] .loc-school-select,
+[data-theme="dark"] .range-input {
+  background-color: #1E1C18;
+  color: #F0EBE0;
+  border-color: #2A2822;
+  color-scheme: dark;
+}
+[data-theme="dark"] .search-inner {
+  background: #161612;
+}
+[data-theme="dark"] .search-input {
+  color: #F0EBE0;
+}
+[data-theme="dark"] .chat-input {
+  background: #1E1C18;
+  color: #F0EBE0;
+  border-color: #2A2822;
+}
+[data-theme="dark"] .loc-school-wrap {
+  background: #161612;
+  border-color: #2A2822;
+}
+.fee-disclosure-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.fee-disclosure-title { font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 4px; }
+.fee-disclosure-body { font-size: 12px; color: var(--mid); line-height: 1.6; }
+.fee-disclosure-calc { font-size: 12px; font-weight: 600; color: var(--accent); margin-top: 6px; min-height: 16px; }
+
+/* LISTING FEE ROW */
+.lease-fee-row {
+  display: flex; justify-content: space-between; align-items: center;
+  background: var(--accent-light); border-radius: 8px; padding: 10px 14px;
+  margin: 4px 0; font-size: 13px;
+}
+.lease-fee-label { display: flex; align-items: center; gap: 6px; color: var(--accent); font-weight: 500; }
+.lease-fee-amount { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--accent); }
+
+/* MAP PAGE */
+.map-page {
+  display: grid; grid-template-columns: 320px 1fr;
+  height: calc(100vh - 58px);
+}
+.map-sidebar {
+  background: var(--surface); border-right: 1px solid var(--rule);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+.map-sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--rule); flex-shrink: 0;
+}
+.map-sidebar-header h3 { font-family: 'Syne', sans-serif; font-size: 15px; font-weight: 700; }
+.map-count { font-size: 12px; color: var(--mid); background: var(--tag-bg); padding: 3px 10px; border-radius: 20px; }
+.map-listing-list { overflow-y: auto; flex: 1; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+.map-card {
+  background: var(--bg); border: 1.5px solid var(--rule); border-radius: 12px;
+  padding: 14px; cursor: pointer; transition: all 0.15s;
+}
+.map-card:hover, .map-card.active { border-color: var(--accent); background: var(--accent-light); }
+.map-card-price { font-family: 'Syne', sans-serif; font-size: 18px; font-weight: 700; }
+.map-card-price span { font-family: 'Instrument Sans', sans-serif; font-size: 12px; font-weight: 300; color: var(--mid); }
+.map-card-addr { font-size: 12px; color: var(--mid); margin: 3px 0 8px; }
+.map-card-tags { display: flex; flex-wrap: wrap; gap: 5px; }
+.map-container { position: relative; overflow: hidden; background: var(--tag-bg); }
+.map-placeholder {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: var(--bg);
+}
+.map-placeholder-inner { text-align: center; padding: 40px; }
+
+/* MAP PIN LABEL (custom marker style) */
+.map-pin-card {
+  position: absolute; background: var(--surface); border: 2px solid var(--accent);
+  border-radius: 10px; padding: 6px 10px; box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  font-family: 'Syne', sans-serif; font-size: 13px; font-weight: 700; color: var(--accent);
+  white-space: nowrap; cursor: pointer; transition: transform 0.15s;
+  transform-origin: bottom center;
+}
+.map-pin-card::after {
+  content: ''; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  border: 4px solid transparent; border-top-color: var(--accent);
+}
+.map-pin-card:hover { transform: scale(1.08); }
+
+/* POPUP CARD */
+.map-popup {
+  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--surface); border-radius: 16px; padding: 20px 24px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.14); border: 1.5px solid var(--rule);
+  min-width: 300px; max-width: 380px; z-index: 10;
+  animation: fadeUp 0.2s ease both;
+  display: none;
+}
+.map-popup.open { display: block; }
+.map-popup-close {
+  position: absolute; top: 12px; right: 12px; background: var(--tag-bg);
+  border: none; width: 26px; height: 26px; border-radius: 6px; cursor: pointer;
+  font-size: 14px; display: flex; align-items: center; justify-content: center; color: var(--mid);
+}
+.map-popup-price { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; margin-bottom: 2px; }
+.map-popup-price span { font-family: 'Instrument Sans', sans-serif; font-size: 14px; font-weight: 300; color: var(--mid); }
+.map-popup-addr { font-size: 13px; color: var(--mid); margin-bottom: 12px; }
+.map-popup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.map-popup-item { background: var(--bg); border-radius: 8px; padding: 10px; }
+.map-popup-item-label { font-size: 10px; color: var(--mid); text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 2px; }
+.map-popup-item-val { font-size: 13px; font-weight: 500; }
+
+
+/* HEART / FAVORITE */
+.heart-btn {
+  background: none; border: none; cursor: pointer; padding: 4px;
+  font-size: 18px; line-height: 1; transition: transform 0.15s;
+  flex-shrink: 0;
+}
+.heart-btn:hover { transform: scale(1.2); }
+.heart-btn.saved { animation: heartPop 0.25s ease; }
+@keyframes heartPop { 0%{transform:scale(1)} 50%{transform:scale(1.35)} 100%{transform:scale(1)} }
+
+/* SAVED PAGE */
+.saved-empty { text-align:center; padding:80px 20px; color:var(--mid); }
+.saved-empty-icon { font-size:48px; margin-bottom:16px; opacity:0.35; }
+
+/* PROFILE PAGE */
+/* ---- PROFILE PAGE ---- */
+.profile-page { max-width:960px; margin:0 auto; padding:32px 32px 80px; }
+.profile-back { display:inline-flex; align-items:center; gap:6px; font-size:13px; color:var(--mid); cursor:pointer; margin-bottom:24px; background:none; border:none; font-family:inherit; padding:0; transition:color 0.15s; }
+.profile-back:hover { color:var(--accent); }
+
+/* COVER + HEADER */
+.profile-cover {
+  height:160px; border-radius:20px 20px 0 0; overflow:hidden;
+  background: linear-gradient(135deg, var(--accent) 0%, #1a5c3a 100%);
+  position:relative; margin-bottom:0;
+}
+.profile-cover-img { width:100%; height:100%; object-fit:cover; }
+.profile-header {
+  background:var(--surface); border:1.5px solid var(--rule); border-top:none;
+  border-radius:0 0 20px 20px; padding:0 32px 28px; margin-bottom:24px;
+  box-shadow:var(--shadow); position:relative;
+}
+.profile-avatar-wrap { position:relative; display:inline-block; margin-top:-44px; margin-bottom:12px; }
+.profile-avatar {
+  width:88px; height:88px; border-radius:50%;
+  background:var(--accent); color:#fff;
+  font-family:'Syne',sans-serif; font-size:30px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  border:4px solid var(--surface); overflow:hidden; flex-shrink:0;
+}
+.profile-avatar img { width:100%; height:100%; object-fit:cover; }
+.profile-avatar-edit {
+  position:absolute; bottom:2px; right:2px; width:26px; height:26px;
+  background:var(--accent); border:2px solid var(--surface); border-radius:50%;
+  display:flex; align-items:center; justify-content:center; cursor:pointer;
+  font-size:12px; color:#fff;
+}
+.profile-top-row { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.profile-name { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; letter-spacing:-0.02em; }
+.profile-school { font-size:13px; color:var(--mid); margin:3px 0 10px; display:flex; align-items:center; gap:5px; }
+.profile-bio { font-size:13px; color:var(--mid); line-height:1.7; max-width:520px; margin-bottom:14px; }
+.profile-contact-row { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:16px; }
+.profile-contact-item { display:flex; align-items:center; gap:6px; font-size:12px; color:var(--mid); background:var(--tag-bg); padding:5px 12px; border-radius:20px; text-decoration:none; transition:background 0.15s; }
+.profile-contact-item:hover { background:var(--accent-light); color:var(--accent); }
+.profile-social-row { display:flex; flex-wrap:wrap; gap:8px; }
+.profile-social-btn { display:flex; align-items:center; gap:6px; font-size:12px; font-weight:500; padding:6px 14px; border-radius:20px; border:1.5px solid var(--rule); background:var(--surface); color:var(--ink); text-decoration:none; transition:all 0.15s; cursor:pointer; font-family:inherit; }
+.profile-social-btn:hover { border-color:var(--accent); color:var(--accent); }
+.profile-stats { display:flex; gap:28px; margin-top:16px; padding-top:16px; border-top:1px solid var(--rule); }
+.profile-stat { display:flex; flex-direction:column; }
+.profile-stat-num { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; }
+.profile-stat-label { font-size:11px; color:var(--mid); }
+.profile-star-rating { display:flex; align-items:center; gap:6px; }
+.profile-star-num { font-family:'Syne',sans-serif; font-size:22px; font-weight:700; }
+.profile-stars-small { color:#F59E0B; font-size:14px; }
+
+/* TABS */
+.profile-tabs { display:flex; border-bottom:1px solid var(--rule); margin-bottom:24px; gap:0; }
+.profile-tab { padding:10px 20px; font-size:13px; font-weight:500; color:var(--mid); cursor:pointer; border:none; background:none; font-family:inherit; border-bottom:2px solid transparent; margin-bottom:-1px; transition:all 0.15s; }
+.profile-tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.profile-tab-panel { display:none; }
+.profile-tab-panel.active { display:block; }
+
+/* EDIT FIELDS */
+.profile-field-group { margin-bottom:16px; }
+.profile-field-label { font-size:11px; font-weight:600; letter-spacing:0.07em; text-transform:uppercase; color:var(--mid); margin-bottom:6px; display:block; }
+.profile-field-view { font-size:14px; color:var(--ink); padding:4px 0; min-height:24px; }
+.profile-field-view.empty { color:var(--mid); font-style:italic; }
+.profile-edit-row { display:flex; gap:8px; align-items:center; }
+.profile-edit-input { flex:1; border:1.5px solid var(--rule); border-radius:10px; padding:9px 12px; font-family:inherit; font-size:13px; color:var(--ink); background:var(--surface); outline:none; transition:border-color 0.2s; }
+.profile-edit-input:focus { border-color:var(--accent); }
+.profile-section-title { font-family:'Syne',sans-serif; font-size:13px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--mid); margin-bottom:16px; padding-bottom:10px; border-bottom:1px solid var(--rule); }
+
+/* INBOX */
+.inbox-list { display:flex; flex-direction:column; gap:8px; }
+.inbox-item { background:var(--surface); border:1.5px solid var(--rule); border-radius:12px; padding:14px 18px; cursor:pointer; transition:all 0.15s; display:flex; gap:12px; align-items:center; }
+.inbox-item:hover { border-color:var(--accent); background:var(--accent-light); }
+.inbox-item-info { flex:1; }
+.inbox-item-name { font-weight:500; font-size:13px; }
+.inbox-item-preview { font-size:12px; color:var(--mid); margin-top:2px; }
+.inbox-item-time { font-size:11px; color:var(--mid); flex-shrink:0; }
+.inbox-unread { width:8px; height:8px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+
+/* REVIEWS */
+.reviews-list { display:flex; flex-direction:column; gap:12px; margin-bottom:32px; }
+.review-card { background:var(--surface); border:1.5px solid var(--rule); border-radius:14px; padding:18px 20px; }
+.review-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:8px; }
+.review-author { display:flex; align-items:center; gap:10px; }
+.review-avatar { width:30px; height:30px; border-radius:50%; background:var(--tag-bg); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:600; color:var(--mid); }
+.review-name { font-size:13px; font-weight:500; }
+.review-date { font-size:11px; color:var(--mid); }
+.review-stars { color:#F59E0B; font-size:13px; letter-spacing:1px; }
+.review-text { font-size:13px; color:var(--mid); line-height:1.7; }
+.review-form { background:var(--surface); border:1.5px solid var(--rule); border-radius:14px; padding:20px; }
+.review-form-title { font-size:13px; font-weight:600; margin-bottom:14px; }
+.star-picker { display:flex; gap:4px; margin-bottom:12px; }
+.star-btn { background:none; border:none; font-size:22px; cursor:pointer; color:var(--rule); transition:color 0.1s; padding:0; }
+.star-btn.lit { color:#F59E0B; }
+
+/* CHAT MODAL */
+.chat-modal { background:var(--surface); border-radius:20px; width:100%; max-width:480px; box-shadow:0 24px 80px rgba(0,0,0,0.18); animation:modalIn 0.25s ease both; display:flex; flex-direction:column; height:520px; }
+.chat-header { display:flex; align-items:center; gap:12px; padding:18px 20px; border-bottom:1px solid var(--rule); flex-shrink:0; }
+.chat-header-info { flex:1; }
+.chat-header-name { font-weight:600; font-size:14px; }
+.chat-header-listing { font-size:11px; color:var(--mid); }
+.chat-messages { flex:1; overflow-y:auto; padding:16px; display:flex; flex-direction:column; gap:10px; }
+.chat-msg { max-width:75%; padding:10px 14px; border-radius:14px; font-size:13px; line-height:1.5; }
+.chat-msg.them { background:var(--tag-bg); color:var(--ink); border-radius:14px 14px 14px 4px; align-self:flex-start; }
+.chat-msg.me { background:var(--accent); color:#fff; border-radius:14px 14px 4px 14px; align-self:flex-end; }
+.chat-input-row { display:flex; gap:8px; padding:14px 16px; border-top:1px solid var(--rule); flex-shrink:0; }
+.chat-input { flex:1; border:1.5px solid var(--rule); border-radius:10px; padding:10px 14px; font-family:inherit; font-size:13px; outline:none; background:var(--bg); color:var(--ink); transition:border-color 0.2s; }
+.chat-input:focus { border-color:var(--accent); }
+
+/* NAV SAVED BADGE */
+.nav-badge { background:var(--accent); color:#fff; border-radius:10px; font-size:10px; font-weight:700; padding:2px 6px; margin-left:4px; display:none; }
+.nav-badge.show { display:inline; }
+
+/* ---- PROFILE PAGE ---- */
+.profile-page-wrap { max-width: 900px; margin: 0 auto; padding: 32px 32px 80px; animation: fadeUp 0.3s ease both; }
+.profile-cover {
+  background: linear-gradient(135deg, var(--accent) 0%, #1a5c3a 100%);
+  border-radius: 20px 20px 0 0; height: 120px; position: relative;
+}
+.profile-card {
+  background: var(--surface); border: 1.5px solid var(--rule);
+  border-radius: 0 0 20px 20px; padding: 0 32px 28px;
+  box-shadow: var(--shadow); margin-bottom: 24px;
+}
+.profile-avatar-wrap {
+  position: relative; display: inline-block;
+  margin-top: -44px; margin-bottom: 12px;
+}
+.profile-avatar-lg {
+  width: 88px; height: 88px; border-radius: 50%;
+  background: var(--accent); color: #fff;
+  font-family: 'Syne', sans-serif; font-size: 30px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  border: 4px solid var(--surface); overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+.profile-avatar-lg img { width: 100%; height: 100%; object-fit: cover; }
+.profile-avatar-upload-btn {
+  position: absolute; bottom: 2px; right: 2px;
+  background: var(--ink); color: #fff; border: 2px solid var(--surface);
+  border-radius: 50%; width: 26px; height: 26px; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: background 0.15s;
+}
+.profile-avatar-upload-btn:hover { background: var(--accent); }
+.profile-top-row { display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+.profile-name-lg { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+.profile-school-lg { font-size: 13px; color: var(--mid); margin: 3px 0 10px; }
+.profile-bio-lg { font-size: 13px; color: var(--mid); line-height: 1.7; max-width: 520px; margin-bottom: 14px; }
+.profile-contact-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 14px; }
+.profile-contact-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: var(--tag-bg); border-radius: 20px; padding: 5px 12px;
+  font-size: 12px; color: var(--mid); text-decoration: none;
+  transition: background 0.15s, color 0.15s;
+}
+.profile-contact-chip:hover { background: var(--accent-light); color: var(--accent); }
+.profile-stats-row { display: flex; gap: 28px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.profile-stat-item { display: flex; flex-direction: column; }
+.profile-stat-item .num { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 700; }
+.profile-stat-item .lbl { font-size: 11px; color: var(--mid); }
+.profile-stars-lg { color: #F59E0B; font-size: 15px; letter-spacing: 1px; }
+
+/* Profile tabs */
+.profile-tabs { display: flex; gap: 0; border-bottom: 1px solid var(--rule); margin-bottom: 24px; }
+.profile-tab-btn {
+  padding: 10px 20px; font-size: 13px; font-weight: 500; color: var(--mid);
+  cursor: pointer; border: none; background: none; font-family: inherit;
+  border-bottom: 2.5px solid transparent; margin-bottom: -1px; transition: all 0.15s;
+}
+.profile-tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.profile-tab-btn:hover { color: var(--ink); }
+.profile-tab-content { display: none; }
+.profile-tab-content.active { display: block; animation: fadeUp 0.2s ease both; }
+
+/* Edit profile modal */
+.edit-profile-modal { background: var(--surface); border-radius: 20px; width: 100%; max-width: 500px; padding: 36px; box-shadow: 0 24px 80px rgba(0,0,0,0.18); animation: modalIn 0.25s ease both; max-height: 90vh; overflow-y: auto; }
+.avatar-upload-area { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.avatar-preview { width: 64px; height: 64px; border-radius: 50%; background: var(--accent); color: #fff; font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--rule); }
+.avatar-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ---- PAYMENT MODAL ---- */
+.payment-modal {
+  background: var(--surface); border-radius: 20px; width: 100%; max-width: 460px;
+  padding: 36px; box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+  animation: modalIn 0.25s ease both;
+}
+.payment-header { text-align: center; margin-bottom: 24px; }
+.payment-icon { font-size: 40px; margin-bottom: 12px; }
+.payment-title { font-family: 'Syne', sans-serif; font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+.payment-sub { font-size: 13px; color: var(--mid); line-height: 1.6; }
+.payment-breakdown {
+  background: var(--bg); border-radius: 12px; padding: 16px; margin: 20px 0;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.payment-row { display: flex; justify-content: space-between; font-size: 13px; }
+.payment-row.total { font-weight: 700; font-size: 15px; padding-top: 10px; border-top: 1px solid var(--rule); margin-top: 4px; color: var(--accent); }
+.payment-secure { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 11px; color: var(--mid); margin-top: 14px; }
+.payment-btn { width: 100%; padding: 14px; border-radius: 12px; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; border: none; background: var(--accent); color: #fff; transition: background 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.payment-btn:hover { background: #1f5c3a; }
+.payment-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.payment-btn-secondary { width: 100%; padding: 11px; border-radius: 12px; font-family: inherit; font-size: 13px; cursor: pointer; border: 1.5px solid var(--rule); background: transparent; color: var(--mid); margin-top: 8px; transition: all 0.15s; }
+.payment-btn-secondary:hover { border-color: var(--ink); color: var(--ink); }
+.success-banner {
+  background: var(--green-light); border: 1.5px solid var(--accent); border-radius: 12px;
+  padding: 12px 16px; display: flex; align-items: center; gap: 10px;
+  font-size: 13px; color: var(--accent); font-weight: 500; margin-bottom: 16px;
+  display: none;
+}
+.success-banner.show { display: flex; }
+
+/* ---- PROFILE DROPDOWN ---- */
+.profile-dropdown-wrap { position: relative; }
+.profile-dropdown {
+  position: absolute; top: calc(100% + 10px); right: 0;
+  background: var(--surface); border: 1.5px solid var(--rule);
+  border-radius: 14px; box-shadow: 0 8px 40px rgba(0,0,0,0.12);
+  min-width: 220px; z-index: 500; overflow: hidden;
+  animation: fadeUp 0.15s ease both;
+  display: none;
+}
+.profile-dropdown.open { display: block; }
+.dropdown-header {
+  padding: 16px 18px 12px;
+  border-bottom: 1px solid var(--rule);
+}
+.dropdown-header-name { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+.dropdown-header-email { font-size: 11px; color: var(--mid); margin-top: 2px; }
+.dropdown-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 11px 18px; font-size: 13px; color: var(--ink);
+  cursor: pointer; transition: background 0.12s;
+  border: none; background: none; font-family: inherit;
+  width: 100%; text-align: left;
+}
+.dropdown-item:hover { background: var(--hover, var(--tag-bg)); }
+.dropdown-item .item-icon { font-size: 16px; width: 20px; text-align: center; }
+.dropdown-item.danger { color: #C44A3A; }
+.dropdown-divider { height: 1px; background: var(--rule); margin: 4px 0; }
+
+/* ACCOUNT SETTINGS MODAL */
+.settings-modal {
+  background: var(--surface); border-radius: 20px; width: 100%; max-width: 480px;
+  padding: 36px; box-shadow: 0 24px 80px rgba(0,0,0,0.18);
+  animation: modalIn 0.25s ease both; max-height: 90vh; overflow-y: auto;
+}
+
+@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@media (max-width: 768px) {
+  nav { padding: 0 16px; }
+  .hero, .search-bar, .layout { padding-left: 16px; padding-right: 16px; }
+  .layout { grid-template-columns: 1fr; }
+  .filters { display: none; }
+  .form-row { grid-template-columns: 1fr; }
+  .listing-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="logo" onclick="switchPage('listings')">L<span style="color:var(--green);font-style:italic">ease</span></div>
+  <div class="nav-links">
+    <button class="nav-link active" id="nav-listings" onclick="switchPage('listings')">Listings</button>
+    <button class="nav-link" id="nav-map" onclick="switchPage('map')">🗺 Map View</button>
+    <button class="nav-link" id="nav-saved" onclick="switchPage('saved')">♥ Saved<span class="nav-badge" id="saved-badge">0</span></button>
+  </div>
+  <div class="nav-right">
+    <button class="btn btn-ghost" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:16px;padding:8px 12px;">🌙</button>
+    <button class="btn btn-ghost" id="nav-login-btn" onclick="openModal('auth')">Log in</button>
+    <div class="profile-dropdown-wrap" id="nav-profile-wrap" style="display:none">
+      <button class="btn btn-ghost" id="nav-profile-btn" onclick="toggleProfileDropdown()" style="display:flex;align-items:center;gap:6px">
+        <div id="nav-avatar-circle" style="width:26px;height:26px;border-radius:50%;background:var(--accent);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif">?</div>
+        <span id="nav-profile-name">Profile</span>
+        <span style="font-size:10px;color:var(--mid)">▾</span>
+      </button>
+      <div class="profile-dropdown" id="profile-dropdown">
+        <div class="dropdown-header">
+          <div class="dropdown-header-name" id="dd-name">—</div>
+          <div class="dropdown-header-email" id="dd-email">—</div>
+        </div>
+        <button class="dropdown-item" onclick="closeDropdown();openMyProfileModal()">
+          <span class="item-icon">👤</span> My Profile
+        </button>
+        <button class="dropdown-item" onclick="closeDropdown();openMyListings()">
+          <span class="item-icon">🏠</span> My Listings
+        </button>
+        <button class="dropdown-item" onclick="closeDropdown();switchPage('saved');renderSavedPage()">
+          <span class="item-icon">❤️</span> Saved Listings
+        </button>
+        <button class="dropdown-item" onclick="closeDropdown();openModal('account-settings')">
+          <span class="item-icon">⚙️</span> Account Settings
+        </button>
+        <div class="dropdown-divider"></div>
+        <button class="dropdown-item danger" onclick="closeDropdown();logOut()">
+          <span class="item-icon">🚪</span> Log Out
+        </button>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="openModal('post')">+ Post Listing</button>
+  </div>
+</nav>
+
+<!-- PAGE: LISTINGS -->
+<div id="page-listings">
+<!-- HERO -->
+<div class="hero">
+  <h1>Find your next <em>lease</em><br>or pass one on.</h1>
+  <p>The marketplace built for college students — list, find, and transfer apartment leases near your campus.</p>
+  <div class="hero-stats">
+    <div class="stat"><span class="stat-num" id="stat-listings">0</span><span class="stat-label">Active listings</span></div>
+
+    <div class="stat"><span class="stat-num" id="stat-zip-count">—</span><span class="stat-label" id="stat-zip-label">Near your zip</span></div>
+  </div>
+  <div class="loc-filter">
+    <div class="loc-tabs">
+      <button class="loc-tab active" id="loc-tab-zip" onclick="switchLocTab('zip')">📍 My Zip Code</button>
+      <button class="loc-tab" id="loc-tab-school" onclick="switchLocTab('school')">🎓 Near a School</button>
+    </div>
+    <div class="loc-panel" id="loc-panel-zip">
+      <div class="loc-row">
+        <div class="zip-input-wrap">
+          <span class="zip-icon">📍</span>
+          <input type="text" class="zip-input" id="zip-input" placeholder="Enter zip code…" maxlength="5" oninput="onZipInput(this)">
+        </div>
+        <div class="zip-distance-wrap" id="zip-distance-wrap" style="visibility:hidden;opacity:0;transition:opacity 0.2s">
+          <span class="zip-dist-label">Within</span>
+          <input type="range" class="distance-slider zip-dist-slider" id="zip-distance-slider" min="0.5" max="25" step="0.5" value="5" oninput="onZipDistSlide(this)">
+          <span class="zip-dist-val" id="zip-dist-display">5.0 mi</span>
+        </div>
+      </div>
+    </div>
+    <div class="loc-panel" id="loc-panel-school" style="display:none">
+      <div class="loc-row">
+        <div class="loc-school-wrap">
+          <select class="loc-school-select" id="distance-school" onchange="updateDistanceSlider()">
+            <option value="">Select a school…</option>
+            <option value="BYU">BYU — Provo, UT</option>
+            <option value="UVU">UVU — Orem, UT</option>
+            <option value="Utah State">Utah State — Logan, UT</option>
+            <option value="U of U">U of U — Salt Lake City, UT</option>
+          </select>
+        </div>
+        <div class="zip-distance-wrap" id="school-distance-wrap" style="visibility:hidden;opacity:0;transition:opacity 0.2s">
+          <span class="zip-dist-label">Within</span>
+          <input type="range" class="distance-slider zip-dist-slider" id="distance-slider" min="0.5" max="15" step="0.5" value="5" oninput="onDistanceSlide(this)">
+          <span class="zip-dist-val" id="distance-display">5.0 mi</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SEARCH BAR -->
+<div class="search-bar">
+  <div class="search-inner">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" placeholder="Search by address, neighborhood, or school…" id="search-input" oninput="filterListings()">
+    <div class="search-divider"></div>
+    <div class="search-select-wrap">
+      <select class="search-select" id="school-filter" onchange="filterListings()">
+        <option value="">All Schools</option>
+        <option>BYU</option>
+        <option>UVU</option>
+        <option>Utah State</option>
+        <option>U of U</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="search-divider"></div>
+    <div class="search-select-wrap">
+      <select class="search-select" id="type-filter" onchange="filterListings()">
+        <option value="">Any type</option>
+        <option value="sublease">Sublease</option>
+        <option value="transfer">Full Transfer</option>
+      </select>
+    </div>
+    <button class="search-btn">Search</button>
+  </div>
+</div>
+
+<!-- MAIN LAYOUT -->
+<div class="layout">
+  <!-- FILTERS -->
+  <aside class="filters">
+    <div class="filters-header">
+      <h3>Filters</h3>
+      <button class="filter-reset" onclick="resetFilters()">Clear all</button>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Price / month</span>
+      <div class="range-row">
+        <input class="range-input" type="number" placeholder="Min" id="price-min" oninput="filterListings()">
+        <span class="range-sep">—</span>
+        <input class="range-input" type="number" placeholder="Max" id="price-max" oninput="filterListings()">
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Room Type</span>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" value="private" onchange="filterListings()"><span>Private room</span></label>
+        <label class="filter-option"><input type="checkbox" value="shared" onchange="filterListings()"><span>Shared room</span></label>
+        <label class="filter-option"><input type="checkbox" value="studio" onchange="filterListings()"><span>Studio / entire unit</span></label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Roommates</span>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" value="1" onchange="filterListings()"><span>Just me (1)</span></label>
+        <label class="filter-option"><input type="checkbox" value="2" onchange="filterListings()"><span>2 total</span></label>
+        <label class="filter-option"><input type="checkbox" value="3" onchange="filterListings()"><span>3 total</span></label>
+        <label class="filter-option"><input type="checkbox" value="4" onchange="filterListings()"><span>4 total</span></label>
+        <label class="filter-option"><input type="checkbox" value="5" onchange="filterListings()"><span>5 total</span></label>
+        <label class="filter-option"><input type="checkbox" value="6+" onchange="filterListings()"><span>6+ total</span></label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Parking</span>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" value="parking" onchange="filterListings()"><span>Parking included</span></label>
+        <label class="filter-option"><input type="checkbox" value="garage" onchange="filterListings()"><span>Garage</span></label>
+        <label class="filter-option"><input type="checkbox" value="street" onchange="filterListings()"><span>Street parking</span></label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Utilities Included</span>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" value="wifi" onchange="filterListings()"><span>WiFi / Internet</span></label>
+        <label class="filter-option"><input type="checkbox" value="electric" onchange="filterListings()"><span>Electric</span></label>
+        <label class="filter-option"><input type="checkbox" value="water" onchange="filterListings()"><span>Water</span></label>
+        <label class="filter-option"><input type="checkbox" value="gas" onchange="filterListings()"><span>Gas</span></label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Amenities</span>
+      <div class="filter-options">
+        <label class="filter-option"><input type="checkbox" onchange="filterListings()"><span>Gym</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterListings()"><span>Pool</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterListings()"><span>Pet friendly</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterListings()"><span>Furnished</span></label>
+        <label class="filter-option"><input type="checkbox" onchange="filterListings()"><span>Washer/Dryer</span></label>
+      </div>
+    </div>
+
+    <div class="filter-group">
+      <span class="filter-label">Housing Type</span>
+      <div class="pill-group" id="housing-pills">
+        <button class="pill active" data-val="" onclick="setHousingPill(this, '')">Any</button>
+        <button class="pill" data-val="mens" onclick="setHousingPill(this, 'mens')">🧑 Men&#39;s</button>
+        <button class="pill" data-val="womens" onclick="setHousingPill(this, 'womens')">👩 Women&#39;s</button>
+        <button class="pill" data-val="married" onclick="setHousingPill(this, 'married')">💍 Married</button>
+        <button class="pill" data-val="coed" onclick="setHousingPill(this, 'coed')">🏠 Co-ed</button>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- LISTINGS -->
+  <main>
+    <div class="main-header">
+      <span class="results-count"><strong id="count">6</strong> listings found</span>
+      <select class="sort-select" id="sort-select" onchange="filterListings()">
+        <option value="newest">Newest first</option>
+        <option value="price-asc">Price: low to high</option>
+        <option value="price-desc">Price: high to low</option>
+        <option value="date">Move-in date</option>
+      </select>
+    </div>
+    <div class="listings" id="listings-grid"></div>
+  </main>
+</div>
+
+</div><!-- end #page-listings -->
+
+<!-- PAGE: MAP -->
+<div id="page-map" style="display:none">
+  <div class="map-page">
+    <div class="map-sidebar" id="map-sidebar">
+      <div class="map-sidebar-header">
+        <h3>Listings</h3>
+        <span class="map-count" id="map-count">6 shown</span>
+      </div>
+      <div class="map-listing-list" id="map-listing-list"></div>
+    </div>
+    <div class="map-container">
+      <div id="google-map" style="width:100%;height:100%;"></div>
+      <div class="map-popup" id="map-popup"></div>
+    </div>
+  </div>
+</div><!-- end #page-map -->
+
+<!-- PAGE: SAVED -->
+<div id="page-saved" style="display:none">
+  <div style="max-width:1200px;margin:0 auto;padding:40px 32px 80px">
+    <h2 style="font-family:'Syne',sans-serif;font-size:28px;font-weight:700;letter-spacing:-0.02em;margin-bottom:8px;">Saved Listings</h2>
+    <p style="color:var(--mid);font-size:14px;margin-bottom:28px;">Listings you've hearted for later.</p>
+    <div class="listings" id="saved-grid"></div>
+  </div>
+</div><!-- end page-saved -->
+
+<!-- PAGE: PROFILE -->
+<div id="page-profile" style="display:none">
+  <div id="profile-content" style="min-height:400px"></div>
+</div><!-- end page-profile -->
+
+<!-- CHAT MODAL -->
+<div class="overlay" id="chat-overlay" onclick="closeIfOverlay(event,'chat')">
+  <div class="chat-modal" id="chat-modal-inner">
+    <div class="chat-header">
+      <div class="avatar" id="chat-avatar" style="width:36px;height:36px;font-size:14px">JK</div>
+      <div class="chat-header-info">
+        <div class="chat-header-name" id="chat-name">Jordan K.</div>
+        <div class="chat-header-listing" id="chat-listing">450 N 500 W, Provo</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('chat')">✕</button>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="chat-msg them">Hey! Is this listing still available?</div>
+      <div class="chat-msg me">Yes it is! When are you looking to move in?</div>
+      <div class="chat-msg them">Around January. Can I schedule a showing?</div>
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" id="chat-input" type="text" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendChatMsg()">
+      <button class="btn btn-primary" style="padding:10px 16px" onclick="sendChatMsg()">Send</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT PROFILE MODAL -->
+<div class="overlay" id="edit-profile-overlay" onclick="closeIfOverlay(event,'edit-profile')">
+  <div class="edit-profile-modal">
+    <div class="modal-header">
+      <div><div class="modal-title">Edit Profile</div></div>
+      <button class="modal-close" onclick="closeModal('edit-profile')">✕</button>
+    </div>
+    <div class="avatar-upload-area">
+      <div class="avatar-preview" id="edit-avatar-preview">?</div>
+      <div>
+        <button class="btn btn-outline" onclick="document.getElementById('edit-avatar-input').click()">Upload Photo</button>
+        <input type="file" id="edit-avatar-input" accept="image/*" style="display:none" onchange="handleAvatarUpload(event)">
+        <div style="font-size:11px;color:var(--mid);margin-top:4px">JPG or PNG, square works best</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>First Name</label><input type="text" id="edit-first-name" placeholder="Alex"></div>
+      <div class="form-group"><label>Last Name</label><input type="text" id="edit-last-name" placeholder="Smith"></div>
+    </div>
+    <div class="form-group"><label>School</label>
+      <select id="edit-school">
+        <option value="">Select school…</option>
+        <option>BYU</option><option>UVU</option><option>Utah State</option><option>U of U</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Bio</label><textarea id="edit-bio" placeholder="Tell renters a bit about yourself…"></textarea></div>
+    <div class="form-group"><label>Phone / WhatsApp</label><input type="text" id="edit-phone" placeholder="(801) 555-0100"></div>
+    <div class="form-group"><label>Instagram handle</label><input type="text" id="edit-instagram" placeholder="@yourhandle"></div>
+    <div class="form-group"><label>Snapchat</label><input type="text" id="edit-snapchat" placeholder="yourusername"></div>
+    <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="saveProfile()">Save Changes</button>
+  </div>
+</div>
+
+<!-- PAYMENT: LISTING FEE MODAL -->
+<div class="overlay" id="payment-listing-overlay" onclick="closeIfOverlay(event,'payment-listing')">
+  <div class="payment-modal">
+    <div class="modal-header" style="margin-bottom:0">
+      <div></div>
+      <button class="modal-close" onclick="closeModal('payment-listing')">✕</button>
+    </div>
+    <div class="payment-header">
+      <div class="payment-icon">🏠</div>
+      <div class="payment-title">Publish Your Listing</div>
+      <div class="payment-sub">A one-time $10 fee is required to list on Lease. Your listing goes live immediately after payment.</div>
+    </div>
+    <div class="payment-breakdown">
+      <div class="payment-row"><span>Listing fee</span><span>$10.00</span></div>
+      <div class="payment-row"><span>Processing (Stripe)</span><span>~$0.59</span></div>
+      <div class="payment-row total"><span>Total today</span><span>$10.00</span></div>
+    </div>
+    <div class="success-banner" id="listing-fee-success">✓ Payment successful! Publishing your listing…</div>
+    <button class="payment-btn" id="pay-listing-btn" onclick="payListingFee()">
+      💳 Pay $10 &amp; Publish
+    </button>
+    <button class="payment-btn-secondary" onclick="closeModal('payment-listing')">Cancel</button>
+    <div class="payment-secure">🔒 Secured by Stripe · SSL encrypted</div>
+  </div>
+</div>
+
+<!-- PAYMENT: SUCCESS FEE MODAL -->
+<div class="overlay" id="payment-success-overlay" onclick="closeIfOverlay(event,'payment-success')">
+  <div class="payment-modal">
+    <div class="modal-header" style="margin-bottom:0">
+      <div></div>
+      <button class="modal-close" onclick="closeModal('payment-success')">✕</button>
+    </div>
+    <div class="payment-header">
+      <div class="payment-icon">🎉</div>
+      <div class="payment-title">Mark as Transferred</div>
+      <div class="payment-sub">Congrats on your lease transfer! A 5% success fee applies to your total monthly costs.</div>
+    </div>
+    <div class="payment-breakdown" id="success-fee-breakdown">
+      <div class="payment-row"><span>Base rent</span><span id="sf-rent">—</span></div>
+      <div class="payment-row"><span>Utilities</span><span id="sf-utilities">—</span></div>
+      <div class="payment-row"><span>Internet</span><span id="sf-internet">—</span></div>
+      <div class="payment-row"><span>Other fees</span><span id="sf-other">—</span></div>
+      <div class="payment-row" style="padding-top:8px;border-top:1px solid var(--rule);font-weight:500"><span>Total monthly</span><span id="sf-total-monthly">—</span></div>
+      <div class="payment-row total"><span>5% success fee</span><span id="sf-fee-amount">—</span></div>
+    </div>
+    <div class="success-banner" id="success-fee-success">✓ Payment successful! Your listing has been marked as transferred.</div>
+    <button class="payment-btn" id="pay-success-btn" onclick="paySuccessFee()">
+      💳 Pay Success Fee
+    </button>
+    <button class="payment-btn-secondary" onclick="closeModal('payment-success')">Cancel</button>
+    <div class="payment-secure">🔒 Secured by Stripe · SSL encrypted</div>
+  </div>
+</div>
+
+<!-- ACCOUNT SETTINGS MODAL -->
+<div class="overlay" id="account-settings-overlay" onclick="closeIfOverlay(event,'account-settings')">
+  <div class="settings-modal">
+    <div class="modal-header">
+      <div><div class="modal-title">Account Settings</div><div class="modal-sub">Manage your Lease account</div></div>
+      <button class="modal-close" onclick="closeModal('account-settings')">✕</button>
+    </div>
+
+    <div class="section-label">👤 Profile Info</div>
+    <div class="form-row">
+      <div class="form-group"><label>First Name</label><input type="text" id="settings-first-name" placeholder="Alex"></div>
+      <div class="form-group"><label>Last Name</label><input type="text" id="settings-last-name" placeholder="Smith"></div>
+    </div>
+    <div class="form-group"><label>School</label>
+      <select id="settings-school">
+        <option value="">Select school…</option>
+        <option>BYU</option><option>UVU</option><option>Utah State</option><option>U of U</option><option>Other</option>
+      </select>
+    </div>
+    <div class="form-group"><label>Bio</label><textarea id="settings-bio" placeholder="Tell renters about yourself…"></textarea></div>
+
+    <div class="section-label">📞 Contact Info</div>
+    <div class="form-group"><label>Phone / WhatsApp</label><input type="text" id="settings-phone" placeholder="(801) 555-0100"></div>
+    <div class="form-group"><label>Instagram</label><input type="text" id="settings-instagram" placeholder="@handle"></div>
+    <div class="form-group"><label>Snapchat</label><input type="text" id="settings-snapchat" placeholder="username"></div>
+
+    <div class="section-label">🔒 Security</div>
+    <div class="form-group"><label>New Password</label><input type="password" id="settings-password" placeholder="Leave blank to keep current"></div>
+    <div class="form-group"><label>Confirm Password</label><input type="password" id="settings-password-confirm" placeholder="Repeat new password"></div>
+
+    <div style="display:flex;gap:10px;margin-top:8px">
+      <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="saveAccountSettings()">Save Changes</button>
+      <button class="btn btn-outline" onclick="closeModal('account-settings')">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MY LISTINGS MODAL -->
+<div class="overlay" id="my-listings-overlay" onclick="closeIfOverlay(event,'my-listings')">
+  <div class="modal" style="max-width:700px">
+    <div class="modal-header">
+      <div><div class="modal-title">My Listings</div><div class="modal-sub">Your active lease listings</div></div>
+      <button class="modal-close" onclick="closeModal('my-listings')">✕</button>
+    </div>
+    <div id="my-listings-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;max-height:60vh;overflow-y:auto;padding:4px"></div>
+  </div>
+</div>
+
+<!-- MY PROFILE MODAL -->
+<div class="overlay" id="my-profile-overlay" onclick="closeIfOverlay(event,'my-profile')" style="align-items:flex-start;overflow-y:auto;padding:0">
+  <div style="background:var(--surface);width:100%;max-width:900px;margin:0 auto;min-height:100vh;box-shadow:0 0 60px rgba(0,0,0,0.15);animation:fadeUp 0.25s ease both">
+    <div style="position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;padding:16px 32px">
+      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">My Profile</div>
+      <button class="modal-close" onclick="closeModal('my-profile')" style="width:34px;height:34px">✕</button>
+    </div>
+    <div id="profile-content"></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="overlay" id="auth-overlay" onclick="closeIfOverlay(event,'auth')">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="auth-title">Welcome back</div>
+        <div class="modal-sub" id="auth-sub">Log in to your Subleasy account</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('auth')">✕</button>
+    </div>
+
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tab-login" onclick="switchTab('login')">Log In</button>
+      <button class="modal-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-form">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="login-email" placeholder="you@university.edu">
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="login-password" placeholder="••••••••">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="logIn()">Log In</button>
+      <div style="text-align:center;margin-top:12px"><button class="btn btn-ghost" onclick="forgotPassword()" style="font-size:12px">Forgot password?</button></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signup-form" style="display:none">
+      <div class="form-row">
+        <div class="form-group">
+          <label>First name</label>
+          <input type="text" id="signup-name-first" placeholder="Alex">
+        </div>
+        <div class="form-group">
+          <label>Last name</label>
+          <input type="text" id="signup-name-last" placeholder="Chen">
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" id="signup-email" placeholder="you@university.edu">
+      </div>
+      <div class="form-group">
+        <label>School</label>
+        <select id="signup-school">
+          <option value="">Select your school…</option>
+          <option>BYU</option>
+          <option>UVU</option>
+          <option>Utah State</option>
+          <option>U of U</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" id="signup-password" placeholder="At least 8 characters">
+      </div>
+      <button class="btn btn-primary btn-full" onclick="signUp()">Create Account</button>
+    </div>
+  </div>
+</div>
+
+<!-- POST LISTING MODAL -->
+<div class="overlay" id="post-overlay" onclick="closeIfOverlay(event,'post')">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title">Post a Listing</div>
+        <div class="modal-sub">Fill in your lease details below</div>
+      </div>
+      <button class="modal-close" onclick="closeModal('post')">✕</button>
+    </div>
+
+    <div class="section-label">📍 Location & School</div>
+    <div class="form-group">
+      <label>Full Address</label>
+      <input type="text" placeholder="123 University Ave, Provo, UT 84601" id="post-addr">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>School / University</label>
+        <select id="post-school">
+          <option value="">Select school…</option>
+          <option>BYU</option><option>UVU</option><option>Utah State</option><option>U of U</option><option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Listing Type</label>
+        <select id="post-type">
+          <option value="sublease">Sublease</option>
+          <option value="transfer">Full Transfer</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Housing Type</label>
+        <select id="post-housing">
+          <option value="coed">Co-ed</option>
+          <option value="mens">Men&#39;s only</option>
+          <option value="womens">Women&#39;s only</option>
+          <option value="married">Married student</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-label">💰 Rent & Fees</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Base Rent / Month ($)</label>
+        <input type="number" placeholder="850" id="post-rent" oninput="updateFeeSummary()">
+      </div>
+      <div class="form-group">
+        <label>Transfer Fee ($)</label>
+        <input type="number" placeholder="0" id="post-fee" oninput="updateFeePreview()">
+        <div class="fee-note">Leave 0 if no transfer fee</div>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Est. Utilities / Month ($)</label>
+        <input type="number" placeholder="60">
+      </div>
+      <div class="form-group">
+        <label>Internet / Month ($)</label>
+        <input type="number" placeholder="40">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Other Monthly Fees (describe)</label>
+      <input type="text" placeholder="e.g. parking $50, gym $20…" id="post-extras">
+    </div>
+
+    <div class="section-label">🏠 Unit Details</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Room Type</label>
+        <select id="post-room">
+          <option value="private">Private room</option>
+          <option value="shared">Shared room</option>
+          <option value="studio">Studio / entire unit</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Total Residents</label>
+        <select id="post-residents">
+          <option value="1">1 (just me)</option>
+          <option value="2">2</option>
+          <option value="3">3</option>
+          <option value="4">4</option>
+          <option value="5">5</option>
+          <option value="6+">6+</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Parking</label>
+        <select id="post-parking">
+          <option value="none">No parking</option>
+          <option value="street">Street parking</option>
+          <option value="lot">Lot included</option>
+          <option value="garage">Garage included</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Bedrooms</label>
+        <select id="post-beds">
+          <option>Studio</option><option>1</option><option>2</option><option>3</option><option>4+</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="section-label">📅 Lease Dates</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Lease Start</label>
+        <input type="date" id="post-start">
+      </div>
+      <div class="form-group">
+        <label>Lease End</label>
+        <input type="date" id="post-end">
+      </div>
+    </div>
+
+    <div class="section-label">📸 Photos & Description</div>
+    <div class="upload-area" onclick="document.getElementById('photo-file-input').click()" id="upload-drop-zone">
+      <input type="file" id="photo-file-input" accept="image/*" multiple style="display:none" onchange="handlePhotoUpload(event)">
+      <div class="upload-icon">📷</div>
+      <div id="upload-label">Click to upload photos</div>
+      <div style="font-size:11px;margin-top:4px;color:var(--mid)">JPG, PNG up to 10MB each</div>
+    </div>
+    <div id="photo-preview-row" style="display:none;gap:8px;flex-wrap:wrap;margin-top:10px"></div>
+    <div class="form-group" style="margin-top:14px">
+      <label>Description</label>
+      <textarea placeholder="Describe the apartment, neighborhood, reason for leaving, anything a renter should know…" id="post-desc"></textarea>
+    </div>
+
+    <div class="section-label">📞 Contact Info</div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Phone / WhatsApp</label>
+        <input type="text" placeholder="(801) 555-0100" id="post-phone">
+      </div>
+      <div class="form-group">
+        <label>Preferred Contact</label>
+        <select>
+          <option>Text / WhatsApp</option>
+          <option>Email</option>
+          <option>Phone call</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="lease-fee-disclaimer" id="fee-disclaimer">
+      <div class="lease-fee-icon">ℹ️</div>
+      <div class="lease-fee-text">
+        <div class="lease-fee-title">Lease Platform Fee</div>
+        <div class="lease-fee-body">
+          A one-time fee of <strong>1.5% of one month's base rent</strong> is charged to the seller when your lease is successfully transferred. This fee is not visible to buyers.
+        </div>
+        <div class="lease-fee-amount" id="fee-amount-display">—<span> platform fee</span></div>
+        <div class="lease-fee-body" id="fee-calc-note" style="font-size:11px;margin-top:2px;">Enter your base rent above to see your exact fee.</div>
+      </div>
+    </div>
+    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="postListing()">Publish Listing</button>
+  </div>
+</div>
+
+<!-- LISTING DETAIL MODAL -->
+<div class="overlay" id="listing-overlay" onclick="closeIfOverlay(event,'listing')">
+  <div class="listing-modal" id="listing-detail"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script src="https://js.stripe.com/v3/"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ---- SUPABASE CLIENT (initialized after DOM ready) ----
+let _sb; // our supabase client (avoids conflict with CDN global)
+
+// Safety wrappers - defined immediately so HTML onclick handlers never crash
+function filterListings() { if(typeof _filterListings === 'function') _filterListings(); }
+function toggleTheme() {
+  const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+  document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.textContent = isDark ? '🌙' : '☀️';
+}
+function switchPage(page) {
+  const pages = ['listings', 'map', 'saved', 'profile'];
+  pages.forEach(p => {
+    const el = document.getElementById('page-' + p);
+    if (el) el.style.display = p === page ? '' : 'none';
+  });
+  ['listings','map','saved'].forEach(p => {
+    const nav = document.getElementById('nav-' + p);
+    if (nav) nav.classList.toggle('active', p === page);
+  });
+  if (page === 'map') { if(typeof renderMap === 'function') renderMap(); }
+  if (page === 'saved') { if(typeof renderSavedPage === 'function') renderSavedPage(); }
+}
+function openModal(name) {
+  const el = document.getElementById(name + '-overlay');
+  if (!el) return;
+  // For my-profile which uses inline display:none, use style directly
+  if (name === 'my-profile') {
+    el.style.display = 'flex';
+  } else {
+    el.classList.add('open');
+  }
+  if (name === 'account-settings') openAccountSettings();
+}
+function closeModal(name) {
+  const el = document.getElementById(name + '-overlay');
+  if (!el) return;
+  if (name === 'my-profile') {
+    el.style.display = 'none';
+  } else {
+    el.classList.remove('open');
+  }
+}
+function closeIfOverlay(e, name) {
+  if (e.target === document.getElementById(name + '-overlay')) closeModal(name);
+}
+function updateNavForUser() {
+  const name = (typeof currentProfile !== 'undefined' && currentProfile?.name) ||
+               (typeof currentUser !== 'undefined' && currentUser?.email?.split('@')[0]) || 'Me';
+  const initials = name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase() || '?';
+  const loginBtn = document.getElementById('nav-login-btn');
+  const profileWrap = document.getElementById('nav-profile-wrap');
+  const nameEl = document.getElementById('nav-profile-name');
+  const circle = document.getElementById('nav-avatar-circle');
+  const ddName = document.getElementById('dd-name');
+  const ddEmail = document.getElementById('dd-email');
+  if (loginBtn) loginBtn.style.display = 'none';
+  if (profileWrap) profileWrap.style.display = '';
+  if (nameEl) nameEl.textContent = name;
+  if (circle) circle.textContent = initials;
+  if (ddName) ddName.textContent = name;
+  if (ddEmail && typeof currentUser !== 'undefined') ddEmail.textContent = currentUser?.email || '';
+}
+function resetNavForGuest() {
+  const loginBtn = document.getElementById('nav-login-btn');
+  const profileWrap = document.getElementById('nav-profile-wrap');
+  if (loginBtn) loginBtn.style.display = '';
+  if (profileWrap) profileWrap.style.display = 'none';
+}
+
+// ---- SUPABASE AUTH & DATA ----
+let currentUser = null;
+let currentProfile = null;
+
+async function initAuth() {
+  // Get current session first
+  const { data: { session } } = await _sb.auth.getSession();
+  if (session) {
+    currentUser = session.user;
+    await loadProfile(currentUser.id);
+    updateNavForUser();
+  } else {
+    resetNavForGuest();
+  }
+
+  // Listen for future auth changes - only respond to SIGNED_OUT
+  // logIn() and signUp() handle their own nav updates directly
+  _sb.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_OUT') {
+      currentUser = null;
+      currentProfile = null;
+      savedIds = new Set();
+      updateSavedBadge();
+      resetNavForGuest();
+    }
+    // All other events (SIGNED_IN, INITIAL_SESSION, TOKEN_REFRESHED, etc.)
+    // are handled by logIn()/signUp() directly to avoid race conditions
+  });
+}
+
+async function loadProfile(userId) {
+  const { data } = await _sb.from('profiles').select('*').eq('id', userId).single();
+  if (data) currentProfile = data;
+}
+
+// updateNavForUser defined at top of script
+
+// resetNavForGuest defined at top of script
+
+// ---- SIGN UP ----
+async function signUp() {
+  const name = document.getElementById('signup-name-first').value.trim() + ' ' + document.getElementById('signup-name-last').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const school = document.getElementById('signup-school').value;
+
+  if (!email || !password || !name.trim()) { showToast('Please fill in all fields', false); return; }
+
+  const { data, error } = await _sb.auth.signUp({
+    email, password,
+    options: { data: { name: name.trim() } }
+  });
+
+  if (error) { showToast(error.message, false); return; }
+
+  // Update profile with school
+  if (data.user) {
+    await _sb.from('profiles').upsert({ id: data.user.id, name: name.trim(), school });
+  }
+
+  if (data.user && !data.user.identities?.length === 0) {
+    currentUser = data.user;
+    await loadProfile(currentUser.id);
+    updateNavForUser();
+  }
+
+  closeModal('auth');
+  showToast('✓ Account created! Check your email to confirm.', true);
+}
+
+// ---- LOG IN ----
+async function logIn() {
+  const email = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  if (!email || !password) { showToast('Please enter email and password', false); return; }
+
+  const { data, error } = await _sb.auth.signInWithPassword({ email, password });
+  if (error) { showToast(error.message, false); return; }
+
+  // Manually set user and update nav immediately
+  currentUser = data.user;
+  await loadProfile(currentUser.id);
+  await loadSavedIds();
+  updateNavForUser();
+
+  closeModal('auth');
+  showToast('✓ Logged in!', true);
+  await refreshListings();
+}
+
+// ---- LOG OUT ----
+async function logOut() {
+  try {
+    if (typeof _sb !== 'undefined' && _sb) await _sb.auth.signOut();
+  } catch(e) { console.warn('signOut error:', e); }
+  // Always reset state regardless of Supabase response
+  currentUser = null;
+  currentProfile = null;
+  savedIds = new Set();
+  updateSavedBadge();
+  resetNavForGuest();
+  closeModal('my-profile');
+  closeModal('account-settings');
+  closeDropdown();
+  switchPage('listings');
+  showToast('Logged out', false);
+}
+
+// ---- LOAD LISTINGS FROM DB ----
+async function loadListings() {
+  const { data, error } = await _sb
+    .from('listings')
+    .select('*, profiles(id, name, school, avatar_url)')
+    .eq('is_active', true)
+    .order('created_at', { ascending: false });
+
+  if (error) { console.error(error); return []; }
+
+  return (data || []).map(l => ({
+    id: l.id,
+    user_id: l.user_id,
+    emoji: '🏠',
+    photo: l.photo_url || null,
+    type: l.type,
+    housingType: l.housing_type,
+    address: l.address,
+    school: l.school || '',
+    lat: l.lat,
+    lng: l.lng,
+    rent: l.rent,
+    transferFee: l.transfer_fee || 0,
+    utilities: l.utilities || 0,
+    internet: l.internet || 0,
+    extras: l.extras || '',
+    roomType: l.room_type,
+    residents: l.residents,
+    parking: l.parking || 'none',
+    beds: l.beds || '',
+    leaseStart: l.lease_start || '',
+    leaseEnd: l.lease_end || '',
+    desc: l.description || '',
+    poster: (l.profiles?.name || 'User').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+    name: l.profiles?.name || 'User',
+    phone: '',
+    tags: [],
+    posted: new Date(l.created_at).toLocaleDateString()
+  }));
+}
+
+// ---- POST LISTING TO DB ----
+async function postListingToDB(formData) {
+  if (!currentUser) { showToast('Please log in to post a listing', false); openModal('auth'); return; }
+
+  const { data, error } = await _sb.from('listings').insert([{
+    user_id: currentUser.id,
+    type: formData.type,
+    housing_type: formData.housingType,
+    address: formData.address,
+    school: formData.school,
+    rent: formData.rent,
+    transfer_fee: formData.transferFee,
+    utilities: formData.utilities,
+    internet: formData.internet,
+    extras: formData.extras,
+    room_type: formData.roomType,
+    residents: formData.residents,
+    parking: formData.parking,
+    beds: formData.beds,
+    lease_start: formData.leaseStart,
+    lease_end: formData.leaseEnd,
+    description: formData.desc,
+    photo_url: formData.photo || null,
+    lat: formData.lat || null,
+    lng: formData.lng || null,
+  }]).select();
+
+  if (error) { showToast('Error posting listing: ' + error.message, false); return; }
+  return data?.[0];
+}
+
+// ---- SAVE/UNSAVE LISTING ----
+async function toggleSavedDB(listingId) {
+  if (!currentUser) { showToast('Log in to save listings', false); openModal('auth'); return; }
+  if (savedIds.has(listingId)) {
+    await _sb.from('saved_listings').delete().eq('user_id', currentUser.id).eq('listing_id', listingId);
+    savedIds.delete(listingId);
+    showToast('Removed from saved', false);
+  } else {
+    await _sb.from('saved_listings').insert([{ user_id: currentUser.id, listing_id: listingId }]);
+    savedIds.add(listingId);
+    showToast('❤️ Saved!', true);
+  }
+  updateHeartButtons(listingId);
+  updateSavedBadge();
+  if (document.getElementById('page-saved').style.display !== 'none') renderSavedPage();
+}
+
+async function loadSavedIds() {
+  if (!currentUser) return;
+  const { data } = await _sb.from('saved_listings').select('listing_id').eq('user_id', currentUser.id);
+  savedIds = new Set((data || []).map(r => r.listing_id));
+  updateSavedBadge();
+}
+
+// ---- SUBMIT REVIEW TO DB ----
+async function submitReviewToDB(revieweeId, listingId, stars, text) {
+  if (!currentUser) { showToast('Log in to leave a review', false); return; }
+  const { error } = await _sb.from('reviews').insert([{
+    reviewer_id: currentUser.id,
+    reviewee_id: revieweeId,
+    listing_id: listingId,
+    stars, text
+  }]);
+  if (error) { showToast('Error: ' + error.message, false); return; }
+  showToast('✓ Review submitted!', true);
+}
+
+// ---- LOAD REVIEWS ----
+async function loadReviews(userId) {
+  const { data } = await supabase
+    .from('reviews')
+    .select('*, profiles!reviewer_id(name)')
+    .eq('reviewee_id', userId)
+    .order('created_at', { ascending: false });
+  return data || [];
+}
+
+// ---- DATA ----
+// Zip code → approximate lat/lng (Utah college zip codes)
+const zipCoords = {
+  '84601': { lat: 40.2338, lng: -111.6585, city: 'Provo' },
+  '84602': { lat: 40.2518, lng: -111.6493, city: 'Provo (BYU)' },
+  '84603': { lat: 40.2440, lng: -111.6600, city: 'Provo' },
+  '84604': { lat: 40.2650, lng: -111.6380, city: 'Provo' },
+  '84606': { lat: 40.2200, lng: -111.6450, city: 'Provo' },
+  '84058': { lat: 40.2969, lng: -111.6945, city: 'Orem (UVU)' },
+  '84097': { lat: 40.3100, lng: -111.7100, city: 'Orem' },
+  '84321': { lat: 41.7455, lng: -111.8340, city: 'Logan (USU)' },
+  '84322': { lat: 41.7455, lng: -111.8101, city: 'Logan (USU)' },
+  '84112': { lat: 40.7649, lng: -111.8421, city: 'SLC (U of U)' },
+  '84108': { lat: 40.7500, lng: -111.8200, city: 'Salt Lake City' },
+  '84102': { lat: 40.7530, lng: -111.8850, city: 'Salt Lake City' },
+  '84103': { lat: 40.7800, lng: -111.8800, city: 'Salt Lake City' },
+};
+
+let userZipCoords = null;
+let userZipMiles = 5;
+let distMilesSchool = 5;
+let activeLocTab = "zip";
+
+function switchLocTab(tab) {
+  const isZip = tab === 'zip';
+  document.getElementById('loc-tab-zip').classList.toggle('active', isZip);
+  document.getElementById('loc-tab-school').classList.toggle('active', !isZip);
+  document.getElementById('loc-panel-zip').style.display = isZip ? '' : 'none';
+  document.getElementById('loc-panel-school').style.display = isZip ? 'none' : '';
+  // Clear whichever we're leaving
+  if (isZip) {
+    document.getElementById('distance-school').value = '';
+    document.getElementById('school-distance-wrap').style.visibility = 'hidden';
+    document.getElementById('school-distance-wrap').style.opacity = '0';
+    distMilesSchool = 5;
+    filterListings();
+  } else {
+    document.getElementById('zip-input').value = '';
+    document.getElementById('zip-distance-wrap').style.visibility = 'hidden';
+    document.getElementById('zip-distance-wrap').style.opacity = '0';
+    userZipCoords = null;
+    document.getElementById('stat-zip-count').textContent = '—';
+    document.getElementById('stat-zip-label').textContent = 'Near your zip';
+    filterListings();
+  }
+}
+
+function onZipInput(el) {
+  const zip = el.value.trim();
+  const wrap = document.getElementById('zip-distance-wrap');
+  if (zip.length === 5 && /^\d{5}$/.test(zip)) {
+    if (zipCoords[zip]) {
+      userZipCoords = zipCoords[zip];
+    } else {
+      // Generic fallback: try to geolocate or just use null
+      userZipCoords = null;
+    }
+    wrap.style.visibility = 'visible'; wrap.style.opacity = '1';
+    updateZipStats();
+    filterListings();
+  } else {
+    userZipCoords = null;
+    wrap.style.visibility = 'hidden'; wrap.style.opacity = '0';
+    document.getElementById('stat-zip-count').textContent = '—';
+    document.getElementById('stat-zip-label').textContent = 'Near your zip';
+    filterListings();
+  }
+}
+
+function onZipDistSlide(el) {
+  userZipMiles = parseFloat(el.value);
+  const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${pct}%, var(--rule) ${pct}%, var(--rule) 100%)`;
+  document.getElementById('zip-dist-display').textContent = userZipMiles.toFixed(1) + ' mi';
+  updateZipStats();
+  filterListings();
+}
+
+function updateZipStats() {
+  if (!userZipCoords) return;
+  const nearby = sampleListings.filter(l => {
+    if (!l.lat || !l.lng) return false;
+    return haversineDistance(l.lat, l.lng, userZipCoords.lat, userZipCoords.lng) <= userZipMiles;
+  });
+  document.getElementById('stat-zip-count').textContent = nearby.length;
+  document.getElementById('stat-zip-label').textContent = `Within ${userZipMiles.toFixed(0)} mi of ${userZipCoords.city || 'your zip'}`;
+}
+
+// School coords for distance calc
+const schoolCoords = {
+  'BYU':        { lat: 40.2518, lng: -111.6493 },
+  'UVU':        { lat: 40.2969, lng: -111.6945 },
+  'Utah State': { lat: 41.7455, lng: -111.8101 },
+  'U of U':     { lat: 40.7649, lng: -111.8421 }
+};
+
+// Listing coords (approximate)
+const sampleListings = [];
+
+let displayedListings = [...sampleListings];
+
+function renderListings(list) {
+  const grid = document.getElementById('listings-grid');
+  document.getElementById('count').textContent = list.length;
+  document.getElementById('stat-listings').textContent = sampleListings.length;
+  if (list.length === 0) {
+    const noListings = sampleListings.length === 0;
+    grid.innerHTML = `<div class="empty" style="grid-column:1/-1">
+      <div class="empty-icon">${noListings ? '🏠' : '🔍'}</div>
+      <h3>${noListings ? 'No listings yet' : 'No listings found'}</h3>
+      <p>${noListings ? 'Be the first to post a listing!' : 'Try adjusting your filters or search.'}</p>
+      ${noListings ? '<button class="btn btn-primary" style="margin-top:16px" onclick="openModal(&quot;post&quot;)">+ Post a Listing</button>' : ''}
+    </div>`;
+    return;
+  }
+  grid.innerHTML = list.map(l => `
+    <div class="card" onclick="openListing(${l.id})">
+      <div class="card-img">
+        ${l.photo
+          ? `<img src="${l.photo}" alt="${l.address}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
+          : ''}
+        <span class="card-img-placeholder" style="${l.photo ? 'display:none' : ''}">${l.emoji}</span>
+        <div class="card-badge badge-${l.type}">${l.type === 'sublease' ? 'Sublease' : 'Full Transfer'}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
+        <div class="card-addr">📍 ${l.address}</div>
+        <div class="card-tags">
+          <span class="tag tag-accent">${l.school}</span>
+          <span class="tag">${l.roomType === 'private' ? '🚪 Private' : l.roomType === 'shared' ? '👥 Shared' : '🏠 Studio'}</span>
+          <span class="tag">👤 ${l.residents} resident${l.residents > 1 ? 's' : ''}</span>
+          ${l.housingType && l.housingType !== 'coed' ? `<span class="tag tag-housing">${l.housingType === 'mens' ? '🧑 Men&#39;s' : l.housingType === 'womens' ? '👩 Women&#39;s' : '💍 Married'}</span>` : ''}
+          ${l.parking !== 'none' ? `<span class="tag">🚗 Parking</span>` : ''}
+          ${l.transferFee > 0 ? `<span class="tag">💸 $${l.transferFee} fee</span>` : `<span class="tag tag-green">✓ No fee</span>`}
+        </div>
+        <div class="card-footer">
+          <div class="card-user" onclick="event.stopPropagation();switchPage('profile');renderProfile(${l.id})" style="cursor:pointer">
+            <div class="avatar">${l.poster}</div>
+            <span class="card-user-name">${l.name}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button class="heart-btn" id="heart-${l.id}" onclick="event.stopPropagation();toggleSaved(${l.id})" title="Save listing">${savedIds.has(l.id) ? '❤️' : '🤍'}</button>
+            <span class="card-date">${l.posted}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// Active housing pill value
+let activeHousingType = '';
+
+function setHousingPill(btn, val) {
+  document.querySelectorAll('#housing-pills .pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  activeHousingType = val;
+  filterListings();
+}
+
+function updateDistanceSlider() {
+  const school = document.getElementById('distance-school').value;
+  const wrap = document.getElementById('school-distance-wrap');
+  wrap.style.visibility = school ? 'visible' : 'hidden';
+  wrap.style.opacity = school ? '1' : '0';
+  filterListings();
+}
+
+function onDistanceSlide(el) {
+  distMilesSchool = parseFloat(el.value);
+  const pct = ((el.value - el.min) / (el.max - el.min)) * 100;
+  el.style.background = `linear-gradient(to right, var(--accent) 0%, var(--accent) ${pct}%, var(--rule) ${pct}%, var(--rule) 100%)`;
+  document.getElementById('distance-display').textContent = distMilesSchool.toFixed(1) + ' mi';
+  filterListings();
+}
+
+function haversineDistance(lat1, lng1, lat2, lng2) {
+  const R = 3958.8; // miles
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180) * Math.cos(lat2*Math.PI/180) * Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function filterListings() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const school = document.getElementById('school-filter').value;
+  const type = document.getElementById('type-filter').value;
+  const minP = parseFloat(document.getElementById('price-min').value) || 0;
+  const maxP = parseFloat(document.getElementById('price-max').value) || Infinity;
+  const sort = document.getElementById('sort-select').value;
+  const distSchool = document.getElementById('distance-school').value;
+  const distMiles = parseFloat(document.getElementById('distance-slider')?.value) || 5;
+
+  let result = sampleListings.filter(l => {
+    if (q && !l.address.toLowerCase().includes(q) && !l.school.toLowerCase().includes(q) && !l.desc.toLowerCase().includes(q)) return false;
+    if (school && l.school !== school) return false;
+    if (type && l.type !== type) return false;
+    if (l.rent < minP || l.rent > maxP) return false;
+    if (activeHousingType && l.housingType !== activeHousingType) return false;
+    if (distSchool && schoolCoords[distSchool] && l.lat && l.lng) {
+      const sc = schoolCoords[distSchool];
+      const d = haversineDistance(l.lat, l.lng, sc.lat, sc.lng);
+      if (d > distMilesSchool) return false;
+    }
+    if (userZipCoords && l.lat && l.lng) {
+      const d = haversineDistance(l.lat, l.lng, userZipCoords.lat, userZipCoords.lng);
+      if (d > userZipMiles) return false;
+    }
+    return true;
+  });
+
+  if (sort === 'price-asc') result.sort((a,b) => a.rent - b.rent);
+  else if (sort === 'price-desc') result.sort((a,b) => b.rent - a.rent);
+
+  renderListings(result);
+}
+
+function resetFilters() {
+  document.getElementById('search-input').value = '';
+  document.getElementById('school-filter').value = '';
+  document.getElementById('type-filter').value = '';
+  document.getElementById('price-min').value = '';
+  document.getElementById('price-max').value = '';
+  document.getElementById('distance-school').value = '';
+
+  document.querySelectorAll('.filters input[type=checkbox]').forEach(c => c.checked = false);
+  // Reset housing pills
+  activeHousingType = '';
+  document.querySelectorAll('#housing-pills .pill').forEach(p => p.classList.remove('active'));
+  document.querySelector('#housing-pills .pill[data-val=""]').classList.add('active');
+  // Reset location filters
+  document.getElementById('zip-input').value = '';
+  document.getElementById('zip-distance-wrap').style.visibility = 'hidden';
+  document.getElementById('zip-distance-wrap').style.opacity = '0';
+  document.getElementById('distance-school').value = '';
+  document.getElementById('school-distance-wrap').style.visibility = 'hidden';
+  document.getElementById('school-distance-wrap').style.opacity = '0';
+  userZipCoords = null;
+  userZipMiles = 5;
+  distMilesSchool = 5;
+  document.getElementById('stat-zip-count').textContent = '—';
+  document.getElementById('stat-zip-label').textContent = 'Near your zip';
+  // Reset to zip tab
+  switchLocTab('zip');
+}
+
+function openListing(id) {
+  const l = sampleListings.find(x => x.id === id || x.id === String(id) || String(x.id) === String(id));
+  const totalEst = l.rent + l.utilities + l.internet;
+  document.getElementById('listing-detail').innerHTML = `
+    ${l.photo
+      ? `<div class="listing-hero" style="padding:0;overflow:hidden"><img src="${l.photo}" style="width:100%;height:100%;object-fit:cover;display:block" alt="${l.address}"></div>`
+      : `<div class="listing-hero">${l.emoji}</div>`}
+    <div class="listing-body">
+      <div class="listing-top">
+        <div>
+          <div class="listing-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
+          <div class="listing-addr" style="cursor:pointer" onclick="openGoogleMaps(this.dataset.addr)" data-addr="${l.address}">📍 ${l.address} ↗</div>
+          <div class="listing-school">${l.school}</div>
+        </div>
+        <button class="modal-close" onclick="closeModal('listing')" style="margin-top:4px">✕</button>
+      </div>
+
+      <div class="listing-grid">
+        <div class="info-item"><div class="info-item-label">Listing Type</div><div class="info-item-val">${l.type === 'sublease' ? '🔄 Sublease' : '📋 Full Transfer'}</div></div>
+        <div class="info-item"><div class="info-item-label">Housing Type</div><div class="info-item-val">${l.housingType === 'mens' ? '🧑 Men&#39;s' : l.housingType === 'womens' ? '👩 Women&#39;s' : l.housingType === 'married' ? '💍 Married' : '🏠 Co-ed'}</div></div>
+        <div class="info-item"><div class="info-item-label">Room Type</div><div class="info-item-val">${l.roomType === 'private' ? '🚪 Private Room' : l.roomType === 'shared' ? '👥 Shared Room' : '🏠 Studio'}</div></div>
+        <div class="info-item"><div class="info-item-label">Residents</div><div class="info-item-val">👤 ${l.residents} total</div></div>
+        <div class="info-item"><div class="info-item-label">Parking</div><div class="info-item-val">🚗 ${l.parking.charAt(0).toUpperCase() + l.parking.slice(1)}</div></div>
+        <div class="info-item"><div class="info-item-label">Lease Start</div><div class="info-item-val">📅 ${l.leaseStart}</div></div>
+        <div class="info-item"><div class="info-item-label">Lease End</div><div class="info-item-val">📅 ${l.leaseEnd}</div></div>
+      </div>
+
+      <div class="fees-section">
+        <h4>Monthly Cost Breakdown</h4>
+        <div class="fee-row"><span>Base Rent</span><span>$${l.rent}/mo</span></div>
+        <div class="fee-row"><span>Est. Utilities</span><span>${l.utilities ? '$'+l.utilities+'/mo' : 'Included'}</span></div>
+        <div class="fee-row"><span>Internet</span><span>${l.internet ? '$'+l.internet+'/mo' : 'Included'}</span></div>
+        ${l.extras ? `<div class="fee-row"><span>Other</span><span>${l.extras}</span></div>` : ''}
+        ${l.transferFee > 0 ? `<div class="fee-row"><span>Transfer Fee (one-time)</span><span>$${l.transferFee}</span></div>` : ''}
+        <div class="fee-row" style="margin-top:4px"><span>Est. Monthly Total</span><span style="color:var(--accent);font-weight:600">~$${totalEst}/mo</span></div>
+      </div>
+      <div class="lease-fee-row">
+        <span class="lease-fee-label">🏷️ Lease Platform Fee (1.5%)</span>
+        <span class="lease-fee-amount">$${((l.rent + (l.transferFee||0)) * 0.015).toFixed(2)} <span style="font-size:11px;font-weight:400;opacity:0.8">one-time</span></span>
+      </div>
+       <p style="font-size:11px;color:var(--mid);margin-bottom:20px;margin-top:6px">Calculated on first month's rent${l.transferFee > 0 ? ' + $' + l.transferFee + ' transfer fee' : ''}. Collected upon successful transfer.</p>
+
+      ${l.desc ? `<p style="font-size:13px;color:var(--mid);margin-bottom:24px;line-height:1.7">${l.desc}</p>` : ''}
+
+      <div class="contact-section">
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="openChat('${l.id}')">💬 Message ${l.name}</button>
+        <button class="btn btn-outline" onclick="showToast('Copied: ${l.phone}', false)">📞 ${l.phone}</button>
+        <button class="heart-btn" style="font-size:22px;padding:6px" onclick="toggleSaved(${l.id})" id="detail-heart-${l.id}">${savedIds.has(l.id) ? '❤️' : '🤍'}</button>
+      </div>
+      ${currentUser && l.user_id === currentUser.id ? `
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)">
+        <button class="btn btn-outline" style="width:100%;justify-content:center;color:var(--green);border-color:var(--green)" onclick="closeModal('listing');showSuccessFeeModal('${l.id}')">🎉 Mark as Transferred — Pay 5% Success Fee</button>
+      </div>` : ''}
+    </div>
+  `;
+  openModal('listing');
+}
+
+function updateFeeSummary() {
+  const rent = parseFloat(document.getElementById('post-rent').value);
+  const display = document.getElementById('fee-amount-display');
+  const note = document.getElementById('fee-calc-note');
+  if (rent && rent > 0) {
+    const fee = (rent * 0.015).toFixed(2);
+    display.innerHTML = `$${fee}<span> platform fee</span>`;
+    note.textContent = `1.5% × $${rent.toLocaleString()} base rent = $${fee} paid to Lease upon successful transfer.`;
+  } else {
+    display.innerHTML = `—<span> platform fee</span>`;
+    note.textContent = 'Enter your base rent above to see your exact fee.';
+  }
+}
+
+// ---- PHOTO UPLOAD ----
+let uploadedPhotos = []; // array of dataURLs
+
+function handlePhotoUpload(event) {
+  const files = Array.from(event.target.files);
+  if (!files.length) return;
+  const previewRow = document.getElementById('photo-preview-row');
+  previewRow.style.display = 'flex';
+  document.getElementById('upload-label').textContent = files.length + ' photo(s) selected';
+
+  files.forEach((file, idx) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target.result;
+      if (idx === 0) uploadedPhotos[0] = dataUrl; // store first as primary
+      else uploadedPhotos.push(dataUrl);
+
+      const thumb = document.createElement('div');
+      thumb.className = 'photo-thumb';
+      thumb.innerHTML = `<img src="${dataUrl}"><button class="photo-thumb-remove" onclick="removePhoto(${uploadedPhotos.length-1},this.parentNode)">✕</button>`;
+      previewRow.appendChild(thumb);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function removePhoto(idx, thumbEl) {
+  uploadedPhotos.splice(idx, 1);
+  thumbEl.remove();
+  if (uploadedPhotos.length === 0) {
+    document.getElementById('photo-preview-row').style.display = 'none';
+    document.getElementById('upload-label').textContent = 'Click to upload photos';
+  }
+}
+
+function updateFeePreview() {
+  const rent = parseFloat(document.getElementById('post-rent').value) || 0;
+  const fee = parseFloat(document.getElementById('post-fee').value) || 0;
+  const base = rent + fee;
+  const leaseFee = (base * 0.015).toFixed(2);
+  const preview = document.getElementById('post-fee-preview');
+  if (preview) {
+    preview.textContent = base > 0
+      ? `Your estimated Lease fee: $${leaseFee} (based on $${rent.toLocaleString()} rent${fee > 0 ? ` + $${fee} transfer fee` : ''})`
+      : '';
+  }
+}
+
+async function postListing() {
+  if (!currentUser) { showToast('Please log in to post a listing', false); closeModal('post'); openModal('auth'); return; }
+  const addr = document.getElementById('post-addr').value;
+  const rent = document.getElementById('post-rent').value;
+  if (!addr || !rent) { showToast('Please fill in address and rent', false); return; }
+
+  // Collect all form data
+  const listingData = {
+    type: document.getElementById('post-type').value,
+    housingType: document.getElementById('post-housing').value || 'coed',
+    address: addr,
+    school: document.getElementById('post-school').value || 'Other',
+    rent: parseInt(rent),
+    transferFee: parseInt(document.getElementById('post-fee').value) || 0,
+    utilities: parseInt(document.getElementById('post-utilities')?.value) || 0,
+    internet: parseInt(document.getElementById('post-internet')?.value) || 0,
+    extras: document.getElementById('post-extras').value,
+    roomType: document.getElementById('post-room').value,
+    residents: parseInt(document.getElementById('post-residents').value) || 1,
+    parking: document.getElementById('post-parking').value,
+    beds: document.getElementById('post-beds').value,
+    leaseStart: document.getElementById('post-start').value || '',
+    leaseEnd: document.getElementById('post-end').value || '',
+    desc: document.getElementById('post-desc').value,
+    photo: uploadedPhotos[0] || null,
+  };
+
+  closeModal('post');
+  showListingPayment(listingData);
+}
+
+async function _postListingOriginal() {
+  if (!currentUser) { showToast('Please log in to post a listing', false); closeModal('post'); openModal('auth'); return; }
+  const addr = document.getElementById('post-addr').value;
+  const rent = document.getElementById('post-rent').value;
+  if (!addr || !rent) { showToast('Please fill in address and rent', false); return; }
+
+  const formData = {
+    type: document.getElementById('post-type').value,
+    housingType: document.getElementById('post-housing').value || 'coed',
+    address: addr,
+    school: document.getElementById('post-school').value || 'Other',
+    rent: parseInt(rent),
+    transferFee: parseInt(document.getElementById('post-fee').value) || 0,
+    utilities: parseInt(document.getElementById('post-utilities')?.value) || 0,
+    internet: parseInt(document.getElementById('post-internet')?.value) || 0,
+    extras: document.getElementById('post-extras').value,
+    roomType: document.getElementById('post-room').value,
+    residents: parseInt(document.getElementById('post-residents').value) || 1,
+    parking: document.getElementById('post-parking').value,
+    beds: document.getElementById('post-beds').value,
+    leaseStart: document.getElementById('post-start').value || '',
+    leaseEnd: document.getElementById('post-end').value || '',
+    desc: document.getElementById('post-desc').value,
+    photo: uploadedPhotos[0] || null,
+  };
+
+  const btn = document.querySelector('#post-overlay .btn-primary');
+  btn.textContent = 'Publishing…';
+  btn.disabled = true;
+
+  const result = await postListingToDB(formData);
+  btn.textContent = 'Publish Listing';
+  btn.disabled = false;
+
+  if (!result) return;
+
+  closeModal('post');
+  uploadedPhotos = [];
+  document.getElementById('photo-preview-row').style.display = 'none';
+  document.getElementById('upload-label').textContent = 'Click to upload photos';
+  showToast('✓ Listing published!', true);
+  await refreshListings();
+}
+
+// ---- MODAL HELPERS ----
+// openModal/closeModal/closeIfOverlay defined at top
+
+function switchTab(tab) {
+  document.getElementById('login-form').style.display = tab === 'login' ? '' : 'none';
+  document.getElementById('signup-form').style.display = tab === 'signup' ? '' : 'none';
+  document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+  document.getElementById('tab-signup').classList.toggle('active', tab === 'signup');
+}
+
+// fakeLogin replaced by real Supabase auth
+
+// ---- TOAST ----
+let toastTimer;
+function showToast(msg, success) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (success ? ' success' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast', 3000);
+}
+
+// toggleTheme defined at top of script
+
+// ---- PAGE SWITCHING ----
+let mapInitialized = false;
+
+// switchPage defined at top of script
+
+function getFilteredListings() {
+  const q = document.getElementById('search-input').value.toLowerCase();
+  const school = document.getElementById('school-filter').value;
+  const type = document.getElementById('type-filter').value;
+  const minP = parseFloat(document.getElementById('price-min').value) || 0;
+  const maxP = parseFloat(document.getElementById('price-max').value) || Infinity;
+  const distSchool = document.getElementById('distance-school').value;
+
+  return sampleListings.filter(l => {
+    if (q && !l.address.toLowerCase().includes(q) && !l.school.toLowerCase().includes(q)) return false;
+    if (school && l.school !== school) return false;
+    if (type && l.type !== type) return false;
+    if (l.rent < minP || l.rent > maxP) return false;
+    if (activeHousingType && l.housingType !== activeHousingType) return false;
+    if (distSchool && schoolCoords[distSchool] && l.lat && l.lng) {
+      const sc = schoolCoords[distSchool];
+      if (haversineDistance(l.lat, l.lng, sc.lat, sc.lng) > distMilesSchool) return false;
+    }
+    if (userZipCoords && l.lat && l.lng) {
+      if (haversineDistance(l.lat, l.lng, userZipCoords.lat, userZipCoords.lng) > userZipMiles) return false;
+    }
+    return true;
+  });
+}
+
+
+// ---- MAP ----
+let leafletMap = null;
+let leafletMarkers = [];
+let mapPopupId = null;
+
+function initGoogleMap() {
+  // Google Maps loaded — rebuild map if page is open
+  if (document.getElementById('page-map') && document.getElementById('page-map').style.display !== 'none') {
+    buildGoogleMap(getFilteredListings());
+  }
+}
+
+function buildGoogleMap(listings) {
+  const mapEl = document.getElementById('google-map');
+  if (!mapEl || !window.google || !window.google.maps) return;
+
+  // Remove leaflet if it was used
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; leafletMarkers = []; }
+  mapEl.innerHTML = '';
+
+  const gmap = new google.maps.Map(mapEl, {
+    zoom: 11,
+    center: { lat: 40.35, lng: -111.75 },
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true,
+    styles: [
+      { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+      { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+      { elementType: 'geometry', stylers: [{ color: '#f5f0e8' }] },
+      { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
+      { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#ede8df' }] },
+      { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#c9e4f0' }] },
+      { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#e8f0e0' }] },
+    ]
+  });
+
+  const bounds = new google.maps.LatLngBounds();
+  listings.forEach(l => {
+    if (!l.lat || !l.lng) return;
+    const marker = new google.maps.Marker({
+      position: { lat: l.lat, lng: l.lng },
+      map: gmap,
+      title: l.address,
+      label: { text: '$' + l.rent.toLocaleString(), color: '#fff', fontSize: '11px', fontWeight: 'bold' },
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 22,
+        fillColor: '#2A7A52',
+        fillOpacity: 1,
+        strokeColor: '#ffffff',
+        strokeWeight: 2,
+      }
+    });
+    marker.addListener('click', () => selectMapListing(l.id));
+    bounds.extend({ lat: l.lat, lng: l.lng });
+  });
+
+  if (listings.length > 0) {
+    gmap.fitBounds(bounds);
+    google.maps.event.addListenerOnce(gmap, 'idle', () => {
+      if (gmap.getZoom() > 14) gmap.setZoom(14);
+    });
+  }
+}
+
+function renderMap() {
+  const listings = getFilteredListings();
+  document.getElementById('map-count').textContent = listings.length + ' shown';
+
+  // Sidebar
+  const list = document.getElementById('map-listing-list');
+  list.innerHTML = listings.map(l => `
+    <div class="map-card" id="mc-${l.id}" onclick="selectMapListing(${l.id})">
+      <div class="map-card-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
+      <div class="map-card-addr">📍 ${l.address}</div>
+      <div class="map-card-tags">
+        <span class="tag tag-accent">${l.school}</span>
+        <span class="tag">${l.roomType === 'private' ? '🚪 Private' : l.roomType === 'shared' ? '👥 Shared' : '🏠 Studio'}</span>
+        <span class="tag">👤 ${l.residents} residents</span>
+        ${l.parking !== 'none' ? '<span class="tag">🚗 Parking</span>' : ''}
+      </div>
+    </div>
+  `).join('');
+
+  // Use Google Maps if loaded, otherwise Leaflet
+  if (window.google && window.google.maps) {
+    buildGoogleMap(listings);
+  } else {
+    buildLeafletMap(listings);
+  }
+}
+
+function buildLeafletMap(listings) {
+  if (typeof L === 'undefined') {
+    setTimeout(() => buildLeafletMap(listings), 150);
+    return;
+  }
+  const mapEl = document.getElementById('google-map');
+  if (!mapEl) return;
+
+  // Destroy existing map instance to avoid blank tile bug
+  if (leafletMap) { leafletMap.remove(); leafletMap = null; }
+  leafletMarkers = [];
+  mapEl.innerHTML = '';
+
+  leafletMap = L.map('google-map', {
+    center: [40.35, -111.75],
+    zoom: 11,
+    zoomControl: true
+  });
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19
+  }).addTo(leafletMap);
+
+  const bounds = [];
+  listings.forEach(l => {
+    if (!l.lat || !l.lng) return;
+    const icon = L.divIcon({
+      className: '',
+      html: `<div style="background:#2A7A52;color:#fff;padding:5px 12px;border-radius:20px;font-family:Syne,sans-serif;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 3px 10px rgba(0,0,0,0.25);border:2px solid #fff;cursor:pointer;display:inline-block;">$${l.rent.toLocaleString()}/mo</div>`,
+      iconSize: [100, 30],
+      iconAnchor: [50, 15]
+    });
+    const m = L.marker([l.lat, l.lng], { icon }).addTo(leafletMap);
+    m.on('click', () => selectMapListing(l.id));
+    leafletMarkers.push(m);
+    bounds.push([l.lat, l.lng]);
+  });
+
+  if (bounds.length > 0) leafletMap.fitBounds(bounds, { padding: [50, 50] });
+
+  // invalidateSize after layout paint
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      leafletMap && leafletMap.invalidateSize(true);
+    });
+  });
+}
+
+function selectMapListing(id) {
+  document.querySelectorAll('.map-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('mc-' + id);
+  if (card) { card.classList.add('active'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
+
+  mapPopupId = id;
+  const l = sampleListings.find(x => x.id === id);
+  const popup = document.getElementById('map-popup');
+  if (!popup || !l) return;
+
+  const totalEst = l.rent + (l.utilities || 0) + (l.internet || 0);
+  popup.className = 'map-popup open';
+  popup.innerHTML = `
+    <button class="map-popup-close" onclick="closeMapPopup()">✕</button>
+    <div class="map-popup-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
+    <div class="map-popup-addr" style="cursor:pointer" onclick="openGoogleMaps(this.dataset.addr)" data-addr="${l.address}">📍 ${l.address} ↗</div>
+    <div class="map-popup-grid">
+      <div class="map-popup-item"><div class="map-popup-item-label">School</div><div class="map-popup-item-val">${l.school}</div></div>
+      <div class="map-popup-item"><div class="map-popup-item-label">Residents</div><div class="map-popup-item-val">👤 ${l.residents} total</div></div>
+      <div class="map-popup-item"><div class="map-popup-item-label">Room Type</div><div class="map-popup-item-val">${l.roomType === 'private' ? '🚪 Private' : l.roomType === 'shared' ? '👥 Shared' : '🏠 Studio'}</div></div>
+      <div class="map-popup-item"><div class="map-popup-item-label">Est. Total/mo</div><div class="map-popup-item-val">~$${totalEst}</div></div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-primary" style="flex:1;justify-content:center;font-size:13px" onclick="closeMapPopup();openListing(${l.id})">View Full Listing</button>
+      <button class="btn btn-outline" style="font-size:13px" onclick="showToast('Message sent!',true)">💬</button>
+    </div>
+  `;
+}
+
+function closeMapPopup() {
+  mapPopupId = null;
+  const popup = document.getElementById('map-popup');
+  if (popup) popup.className = 'map-popup';
+  document.querySelectorAll('.map-card').forEach(c => c.classList.remove('active'));
+}
+// ---- SAVED / FAVORITES ----
+let savedIds = new Set();
+
+function toggleSaved(id) {
+  toggleSavedDB(id);
+}
+
+function updateHeartButtons(id) {
+  ['heart-' + id, 'detail-heart-' + id].forEach(btnId => {
+    const btn = document.getElementById(btnId);
+    if (btn) { btn.textContent = savedIds.has(id) ? '❤️' : '🤍'; btn.classList.toggle('saved', savedIds.has(id)); }
+  });
+}
+
+function updateSavedBadge() {
+  const badge = document.getElementById('saved-badge');
+  if (badge) { badge.textContent = savedIds.size; badge.classList.toggle('show', savedIds.size > 0); }
+}
+
+function renderSavedPage() {
+  const grid = document.getElementById('saved-grid');
+  const saved = sampleListings.filter(l => savedIds.has(l.id));
+  if (saved.length === 0) {
+    grid.innerHTML = '<div class="saved-empty" style="grid-column:1/-1"><div class="saved-empty-icon">🤍</div><h3 style="font-family:Syne,sans-serif;font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px;">No saved listings yet</h3><p>Heart listings to save them here.</p></div>';
+    return;
+  }
+  grid.innerHTML = saved.map(l => `
+    <div class="card" onclick="openListing(${l.id})">
+      <div class="card-img"><span class="card-img-placeholder">${l.emoji}</span>
+        <div class="card-badge badge-${l.type}">${l.type === 'sublease' ? 'Sublease' : 'Full Transfer'}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
+        <div class="card-addr">📍 ${l.address}</div>
+        <div class="card-tags">
+          <span class="tag tag-accent">${l.school}</span>
+          <span class="tag">${l.roomType === 'private' ? '🚪 Private' : l.roomType === 'shared' ? '👥 Shared' : '🏠 Studio'}</span>
+          <span class="tag">👤 ${l.residents} residents</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-user"><div class="avatar">${l.poster}</div><span class="card-user-name">${l.name}</span></div>
+          <button class="heart-btn saved" id="heart-${l.id}" onclick="event.stopPropagation();toggleSaved(${l.id})">❤️</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ---- PROFILE ----
+const userReviews = {};
+
+let currentProfileListingId = null;
+let currentProfileUserId = null;
+let pendingStars = 0;
+let editAvatarDataUrl = null;
+
+// Local profile data store (until Supabase storage is set up)
+const localProfileData = {};
+
+async function openMyProfile() {
+  if (!currentUser) { openModal('auth'); return; }
+  currentProfileUserId = currentUser.id;
+  switchPage('profile');
+  await renderProfilePage(currentUser.id, true);
+}
+
+async function renderProfilePage(userId, isOwner) {
+  const container = document.getElementById('profile-content');
+  if (!container) return;
+  container.innerHTML = '<div style="text-align:center;padding:80px;color:var(--mid)"><div style="width:36px;height:36px;border:3px solid var(--rule);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px"></div>Loading…</div>';
+
+  // Load profile data
+  let profile = {};
+  try {
+    if (typeof _sb !== 'undefined' && _sb) {
+      const { data } = await _sb.from('profiles').select('*').eq('id', userId).single();
+      if (data) profile = data;
+    }
+  } catch(e) { console.warn('Profile load error:', e); }
+
+  // Merge local overrides
+  profile = { ...profile, ...(localProfileData[userId] || {}) };
+
+  // Load listings
+  let activeListings = [], pastListings = [];
+  try {
+    if (typeof _sb !== 'undefined' && _sb) {
+      const { data } = await _sb.from('listings').select('*').eq('user_id', userId).order('created_at', { ascending: false });
+      activeListings = (data || []).filter(l => l.is_active);
+      pastListings = (data || []).filter(l => !l.is_active);
+    }
+  } catch(e) { console.warn('Listings load error:', e); }
+
+  // Load reviews
+  let reviews = [];
+  try {
+    if (typeof _sb !== 'undefined' && _sb) {
+      const { data } = await _sb.from('reviews').select('*, profiles!reviewer_id(name)').eq('reviewee_id', userId).order('created_at', { ascending: false });
+      reviews = data || [];
+    }
+  } catch(e) { console.warn('Reviews load error:', e); }
+
+  // Computed
+  const name = profile.name || (isOwner ? (currentUser?.email?.split('@')[0] || 'User') : 'User');
+  const email = profile.email || (isOwner ? currentUser?.email : '');
+  const initials = name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  const isVerified = email && email.toLowerCase().endsWith('.edu');
+  const memberSince = profile.created_at
+    ? new Date(profile.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+    : 'Recently';
+  const avgStars = reviews.length >= 5
+    ? (reviews.reduce((a,r) => a + r.stars, 0) / reviews.length).toFixed(1) : null;
+  const starsHtml = (n) => '★'.repeat(Math.round(n)) + '☆'.repeat(5-Math.round(n));
+
+  const avatarHtml = profile.avatar_url
+    ? `<img src="${profile.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    : `<span style="font-family:'Syne',sans-serif;font-size:30px;font-weight:700;color:#fff">${initials}</span>`;
+
+  const listingCardHtml = (l) => `
+    <div class="card" onclick="closeModal('my-profile');openListing('${l.id}')">
+      <div class="card-img">
+        ${l.photo_url ? `<img src="${l.photo_url}" style="width:100%;height:100%;object-fit:cover">` : `<span class="card-img-placeholder">🏠</span>`}
+        <div class="card-badge badge-${l.type}">${l.type === 'sublease' ? 'Sublease' : 'Full Transfer'}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
+        <div class="card-addr">📍 ${l.address}</div>
+        <div class="card-tags">
+          <span class="tag tag-accent">${l.school || ''}</span>
+          <span class="tag">${l.room_type === 'private' ? '🚪 Private' : l.room_type === 'shared' ? '👥 Shared' : '🏠 Studio'}</span>
+        </div>
+        ${isOwner ? `<div style="margin-top:10px"><button class="btn btn-outline" style="width:100%;font-size:11px;padding:6px;color:var(--green);border-color:var(--green)" onclick="event.stopPropagation();showSuccessFeeModal('${l.id}')">🎉 Mark as Transferred</button></div>` : ''}
+      </div>
+    </div>`;
+
+  const reviewHtml = (r) => `
+    <div style="padding:16px 0;border-bottom:1px solid var(--rule)">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:34px;height:34px;border-radius:50%;background:var(--tag-bg);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--mid)">${(r.profiles?.name||'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase()}</div>
+          <div>
+            <div style="font-size:13px;font-weight:500">${r.profiles?.name || 'User'}</div>
+            <div style="font-size:11px;color:var(--mid)">${new Date(r.created_at).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'})}</div>
+          </div>
+        </div>
+        <div style="color:#F59E0B;font-size:13px">${starsHtml(r.stars)}</div>
+      </div>
+      <div style="font-size:13px;color:var(--mid);line-height:1.6">${r.text}</div>
+    </div>`;
+
+  container.innerHTML = `
+    <!-- GREEN BANNER -->
+    <div style="background:linear-gradient(135deg,#2A7A52 0%,#1a5c3a 60%,#0d3d28 100%);height:130px;position:relative;flex-shrink:0"></div>
+
+    <!-- PROFILE HEADER CARD -->
+    <div style="padding:0 32px 24px;position:relative;margin-bottom:4px">
+
+      <!-- AVATAR -->
+      <div style="position:relative;display:inline-block;margin-top:-44px;margin-bottom:12px">
+        <div style="width:88px;height:88px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);box-shadow:0 4px 20px rgba(0,0,0,0.15);overflow:hidden">
+          ${avatarHtml}
+        </div>
+        ${isOwner ? `<div onclick="openModal('account-settings')" title="Edit photo" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--ink);color:#fff;border:2px solid var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;cursor:pointer">✏️</div>` : ''}
+      </div>
+
+      <!-- ACTION BUTTONS -->
+      <div style="float:right;margin-top:12px;display:flex;gap:8px">
+        ${isOwner
+          ? `<button class="btn btn-outline" onclick="openModal('account-settings')">✏️ Edit Profile</button>
+             <button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>`
+          : `<button class="btn btn-primary" onclick="openChat('${userId}')">💬 Message</button>`}
+      </div>
+      <div style="clear:both"></div>
+
+      <!-- NAME + BADGES -->
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.02em">${name}</div>
+        ${isVerified ? `<span style="background:#E8F5EE;color:#2A7A52;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">✓ Verified Student</span>` : ''}
+        ${avgStars ? `<span style="background:#FEF3C7;color:#B45309;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">★ ${avgStars}</span>` : ''}
+      </div>
+
+      <!-- SCHOOL + MEMBER SINCE -->
+      <div style="font-size:13px;color:var(--mid);margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        ${profile.school ? `<span>🎓 ${profile.school}</span>` : ''}
+        <span>📅 Member since ${memberSince}</span>
+        ${reviews.length > 0 ? `<span>⭐ ${reviews.length} review${reviews.length>1?'s':''}</span>` : ''}
+      </div>
+
+      <!-- BIO -->
+      ${profile.bio
+        ? `<div style="font-size:13px;color:var(--mid);line-height:1.7;max-width:580px;margin-bottom:14px">${profile.bio}</div>`
+        : (isOwner ? `<div style="font-size:13px;color:var(--mid);font-style:italic;margin-bottom:14px;opacity:0.7">Add a bio in Edit Profile so renters know who you are…</div>` : '')}
+
+      <!-- CONTACT CHIPS -->
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${email ? `<a class="profile-contact-chip" href="mailto:${email}">✉️ ${email}</a>` : ''}
+        ${profile.phone ? `<a class="profile-contact-chip" href="tel:${profile.phone}">📞 ${profile.phone}</a>` : ''}
+        ${profile.instagram ? `<a class="profile-contact-chip" href="https://instagram.com/${profile.instagram.replace('@','')}" target="_blank">📸 ${profile.instagram}</a>` : ''}
+        ${profile.snapchat ? `<span class="profile-contact-chip">👻 ${profile.snapchat}</span>` : ''}
+        ${!email && !profile.phone && !profile.instagram && !profile.snapchat && isOwner
+          ? `<span style="font-size:12px;color:var(--mid);font-style:italic">No contact info yet — add it in Edit Profile</span>` : ''}
+      </div>
+    </div>
+
+    <!-- STATS BAR -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:0">
+      <div style="text-align:center;padding:16px 8px">
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">${activeListings.length}</div>
+        <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Active</div>
+      </div>
+      <div style="text-align:center;padding:16px 8px;border-left:1px solid var(--rule);border-right:1px solid var(--rule)">
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">${pastListings.length}</div>
+        <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Completed</div>
+      </div>
+      <div style="text-align:center;padding:16px 8px">
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700">${reviews.length}</div>
+        <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Reviews</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div style="display:flex;border-bottom:1px solid var(--rule);padding:0 32px">
+      <button class="profile-tab-btn active" onclick="showProfileTab('listings')">🏠 Listings</button>
+      <button class="profile-tab-btn" onclick="showProfileTab('reviews')">⭐ Reviews</button>
+      ${isOwner ? `<button class="profile-tab-btn" onclick="showProfileTab('history')">📋 History</button>` : ''}
+    </div>
+
+    <!-- TAB: LISTINGS -->
+    <div class="profile-tab-content active" id="ptab-listings" style="padding:24px 32px">
+      ${activeListings.length === 0
+        ? `<div style="text-align:center;padding:48px 20px;color:var(--mid)">
+            <div style="font-size:42px;margin-bottom:14px">🏠</div>
+            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:8px">${isOwner ? 'You have no active listings' : 'No active listings'}</div>
+            <div style="font-size:13px;margin-bottom:20px">${isOwner ? 'Post your first listing to get started.' : 'This user has no active listings right now.'}</div>
+            ${isOwner ? `<button class="btn btn-primary" onclick="closeModal('my-profile');openModal('post')">+ Post a Listing</button>` : ''}
+          </div>`
+        : `<div class="listings">${activeListings.map(listingCardHtml).join('')}</div>`}
+    </div>
+
+    <!-- TAB: REVIEWS -->
+    <div class="profile-tab-content" id="ptab-reviews" style="padding:24px 32px">
+      ${reviews.length === 0
+        ? `<div style="text-align:center;padding:48px 20px;color:var(--mid)">
+            <div style="font-size:42px;margin-bottom:14px">⭐</div>
+            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:8px">No reviews yet</div>
+            <div style="font-size:13px">${reviews.length < 5 ? 'Star ratings appear after 5+ reviews.' : ''}</div>
+          </div>`
+        : `<div>${reviews.map(reviewHtml).join('')}</div>`}
+      ${!isOwner ? `
+        <div style="margin-top:24px;background:var(--bg);border-radius:14px;padding:20px">
+          <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;margin-bottom:14px">Leave a Review</div>
+          <div class="star-picker" id="star-picker" style="margin-bottom:12px">${[1,2,3,4,5].map(n=>`<button class="star-btn" data-star="${n}" onclick="setStars(${n})">★</button>`).join('')}</div>
+          <div class="form-group"><textarea id="review-text" placeholder="Share your experience with this person…" style="min-height:80px"></textarea></div>
+          <button class="btn btn-primary" onclick="submitReview('${userId}')">Submit Review</button>
+        </div>` : ''}
+    </div>
+
+    <!-- TAB: HISTORY (owner only) -->
+    ${isOwner ? `
+    <div class="profile-tab-content" id="ptab-history" style="padding:24px 32px">
+      ${pastListings.length === 0
+        ? `<div style="text-align:center;padding:48px 20px;color:var(--mid)">
+            <div style="font-size:42px;margin-bottom:14px">📋</div>
+            <div style="font-family:'Syne',sans-serif;font-size:16px;font-weight:600;color:var(--ink);margin-bottom:8px">No completed leases yet</div>
+            <div style="font-size:13px">Transferred leases will appear here.</div>
+          </div>`
+        : `<div style="font-size:13px;color:var(--mid);margin-bottom:16px">${pastListings.length} transferred lease${pastListings.length>1?'s':''}</div>
+           <div class="listings">${pastListings.map(listingCardHtml).join('')}</div>`}
+    </div>` : ''}
+  `;
+}
+
+
+// ---- CHAT ----
+// ---- CHAT ----
+function openChat(listingId) {
+  const l = sampleListings.find(x => x.id === listingId);
+  if (!l) return;
+  document.getElementById('chat-avatar').textContent = l.poster;
+  document.getElementById('chat-name').textContent = l.name;
+  document.getElementById('chat-listing').textContent = l.address;
+  document.getElementById('chat-messages').innerHTML = `
+    <div class="chat-msg them">Hi! Is the listing at ${l.address} still available?</div>
+    <div class="chat-msg me">Yes it is! Let me know if you have any questions.</div>
+  `;
+  openModal('chat');
+}
+
+function sendChatMsg() {
+  const input = document.getElementById('chat-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  const msgs = document.getElementById('chat-messages');
+  msgs.innerHTML += `<div class="chat-msg me">${msg}</div>`;
+  input.value = '';
+  msgs.scrollTop = msgs.scrollHeight;
+  setTimeout(() => {
+    msgs.innerHTML += `<div class="chat-msg them">Thanks for your message! I'll get back to you soon.</div>`;
+    msgs.scrollTop = msgs.scrollHeight;
+  }, 800);
+}
+
+// ---- HELPERS ----
+function openGoogleMaps(addr) {
+  window.open('https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(addr), '_blank');
+}
+
+async function forgotPassword() {
+  const email = document.getElementById('login-email').value.trim();
+  if (!email) { showToast('Enter your email first', false); return; }
+  await _sb.auth.resetPasswordForEmail(email, { redirectTo: 'https://leaseproject.netlify.app/' });
+  showToast('Password reset email sent!', true);
+}
+
+async function refreshListings() {
+  const listings = await loadListings();
+  sampleListings.length = 0;
+  listings.forEach(l => sampleListings.push(l));
+  renderListings(sampleListings);
+  document.getElementById('stat-listings').textContent = sampleListings.length;
+}
+
+// ---- STRIPE PAYMENTS ----
+const STRIPE_PK = 'pk_test_51THHVFQ0wcv3gwt9CGylPB3A7FYLeLLr2hXbl5xyPGQ4pQrIsgLd9fkKxGiShP9VgCzUZv5iKtUo0sQq8Ppbu79d00bd1CHtkm';
+let stripeInstance = null;
+let pendingListingData = null;
+let pendingSuccessListingId = null;
+
+function getStripe() {
+  if (!stripeInstance) stripeInstance = Stripe(STRIPE_PK);
+  return stripeInstance;
+}
+
+// Called when user clicks Publish — intercept and show payment modal
+function showListingPayment(listingData) {
+  pendingListingData = listingData;
+  document.getElementById('listing-fee-success').classList.remove('show');
+  const btn = document.getElementById('pay-listing-btn');
+  btn.textContent = '💳 Pay $10 & Publish';
+  btn.disabled = false;
+  openModal('payment-listing');
+}
+
+async function payListingFee() {
+  if (!currentUser) { closeModal('payment-listing'); openModal('auth'); return; }
+  sessionStorage.setItem('pendingListing', JSON.stringify(pendingListingData));
+  window.location.href = 'https://buy.stripe.com/test_3cI9AV2zKcza1VcekC6kg00?client_reference_id=' + (currentUser.id || '');
+}
+
+// Show success fee modal for a listing
+function showSuccessFeeModal(listingId) {
+  const l = sampleListings.find(x => String(x.id) === String(listingId));
+  if (!l) return;
+  pendingSuccessListingId = listingId;
+
+  const rent = l.rent || 0;
+  const utilities = l.utilities || 0;
+  const internet = l.internet || 0;
+  const other = 0;
+  const total = rent + utilities + internet + other;
+  const fee = (total * 0.05).toFixed(2);
+
+  document.getElementById('sf-rent').textContent = '$' + rent.toLocaleString();
+  document.getElementById('sf-utilities').textContent = utilities ? '$' + utilities : 'N/A';
+  document.getElementById('sf-internet').textContent = internet ? '$' + internet : 'N/A';
+  document.getElementById('sf-other').textContent = other ? '$' + other : 'N/A';
+  document.getElementById('sf-total-monthly').textContent = '$' + total.toLocaleString();
+  document.getElementById('sf-fee-amount').textContent = '$' + fee;
+  document.getElementById('success-fee-success').classList.remove('show');
+
+  const btn = document.getElementById('pay-success-btn');
+  btn.textContent = '💳 Pay $' + fee + ' Success Fee';
+  btn.disabled = false;
+
+  openModal('payment-success');
+}
+
+async function paySuccessFee() {
+  if (!currentUser) { closeModal('payment-success'); openModal('auth'); return; }
+  const l = sampleListings.find(x => String(x.id) === String(pendingSuccessListingId));
+  if (!l) return;
+  const total = (l.rent||0) + (l.utilities||0) + (l.internet||0);
+  const fee = (total * 0.05).toFixed(2);
+  sessionStorage.setItem('transferredListing', String(l.id));
+  showToast('Redirecting to payment for $' + fee + '...', true);
+  setTimeout(() => {
+    window.location.href = 'https://buy.stripe.com/test_3cI9AV2zKcza1VcekC6kg00?client_reference_id=' + (currentUser.id || '') + '_transfer_' + l.id;
+  }, 1000);
+}
+
+// Handle redirect back from Stripe
+async function handlePaymentReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const payment = params.get('payment');
+
+  if (payment === 'success') {
+    // Post the pending listing to DB
+    const pendingStr = sessionStorage.getItem('pendingListing');
+    if (pendingStr) {
+      const listingData = JSON.parse(pendingStr);
+      sessionStorage.removeItem('pendingListing');
+      const result = await postListingToDB(listingData);
+      if (result) {
+        await refreshListings();
+        showToast('🎉 Listing published successfully!', true);
+      }
+    }
+    // Clean URL
+    window.history.replaceState({}, '', '/');
+  } else if (payment === 'transferred') {
+    const listingId = params.get('listing');
+    if (listingId && typeof _sb !== 'undefined' && _sb) {
+      await _sb.from('listings').update({ is_active: false }).eq('id', listingId);
+      await refreshListings();
+      showToast('🎉 Lease marked as transferred!', true);
+    }
+    window.history.replaceState({}, '', '/');
+  } else if (payment === 'cancelled') {
+    showToast('Payment cancelled', false);
+    window.history.replaceState({}, '', '/');
+  }
+}
+
+// ---- PROFILE DROPDOWN ----
+function toggleProfileDropdown() {
+  const dd = document.getElementById('profile-dropdown');
+  dd.classList.toggle('open');
+  // Close when clicking outside
+  if (dd.classList.contains('open')) {
+    setTimeout(() => document.addEventListener('click', closeDropdownOutside), 0);
+  }
+}
+
+function closeDropdownOutside(e) {
+  const wrap = document.getElementById('nav-profile-wrap');
+  if (wrap && !wrap.contains(e.target)) {
+    closeDropdown();
+  }
+}
+
+function closeDropdown() {
+  const dd = document.getElementById('profile-dropdown');
+  if (dd) dd.classList.remove('open');
+  document.removeEventListener('click', closeDropdownOutside);
+}
+
+function renderMyProfilePage() {
+  if (!currentUser) { openModal('auth'); return; }
+  renderProfilePage(currentUser.id, true);
+}
+
+async function openMyProfileModal() {
+  if (!currentUser) { openModal('auth'); return; }
+  openModal('my-profile');
+  renderProfileFallback();
+}
+
+function buildListingCard(l) {
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.style.cursor = 'pointer';
+  div.onclick = () => { closeModal('my-profile'); openListing(l.id); };
+  const imgContent = l.photo_url
+    ? '<img src="' + l.photo_url + '" style="width:100%;height:100%;object-fit:cover">'
+    : '<span class="card-img-placeholder">🏠</span>';
+  const badgeLabel = l.type === 'sublease' ? 'Sublease' : 'Full Transfer';
+  const roomLabel = l.room_type === 'private' ? '🚪 Private' : l.room_type === 'shared' ? '👥 Shared' : '🏠 Studio';
+  div.innerHTML =
+    '<div class="card-img">' + imgContent +
+    '<div class="card-badge badge-' + l.type + '">' + badgeLabel + '</div></div>' +
+    '<div class="card-body">' +
+      '<div class="card-price">$' + l.rent.toLocaleString() + '<span>/mo</span></div>' +
+      '<div class="card-addr">📍 ' + l.address + '</div>' +
+      '<div class="card-tags"><span class="tag tag-accent">' + (l.school||'') + '</span>' +
+      '<span class="tag">' + roomLabel + '</span></div>' +
+      '<div style="margin-top:10px;display:flex;gap:6px">' +
+        '<button class="btn btn-outline" style="flex:1;font-size:11px;padding:6px;color:var(--green);border-color:var(--green)" ' +
+        'onclick="event.stopPropagation();showSuccessFeeModal(\'' + l.id + '\')" >🎉 Mark Transferred</button>' +
+        '<button class="btn btn-ghost" style="font-size:11px;padding:6px;color:#C44A3A" ' +
+        'onclick="event.stopPropagation();deleteListing(\'' + l.id + '\')" >🗑</button>' +
+      '</div>' +
+    '</div>';
+  return div;
+}
+
+function buildListingGrid(grid, listings) {
+  grid.innerHTML = '';
+  listings.forEach(l => grid.appendChild(buildListingCard(l)));
+}
+
+function renderProfileFallback() {
+  const container = document.getElementById('profile-content');
+  if (!container) return;
+
+  const email = currentUser?.email || '';
+  const name = currentProfile?.name || email.split('@')[0] || 'User';
+  const initials = name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase() || '?';
+  const school = currentProfile?.school || '';
+  const bio = currentProfile?.bio || '';
+  const phone = currentProfile?.phone || '';
+  const instagram = currentProfile?.instagram || '';
+  const snapchat = currentProfile?.snapchat || '';
+  const isVerified = email.toLowerCase().endsWith('.edu');
+  const avatarBg = currentProfile?.avatar_url
+    ? `<img src="${currentProfile.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    : `<span style="font-family:'Syne',sans-serif;font-size:30px;font-weight:700;color:#fff">${initials}</span>`;
+
+  container.innerHTML = `
+    <!-- BANNER -->
+    <div style="background:linear-gradient(135deg,#2A7A52 0%,#1a5c3a 60%,#0d3d28 100%);height:130px"></div>
+
+    <div style="padding:0 32px 32px">
+      <!-- AVATAR ROW -->
+      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:-44px;margin-bottom:16px">
+        <div style="position:relative">
+          <div style="width:88px;height:88px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);box-shadow:0 4px 20px rgba(0,0,0,0.15);overflow:hidden">
+            ${avatarBg}
+          </div>
+          <div onclick="openModal('account-settings')" title="Change photo" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--ink);color:#fff;border:2px solid var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer">✏️</div>
+        </div>
+        <div style="display:flex;gap:8px;padding-bottom:8px">
+          <button class="btn btn-outline" onclick="openModal('account-settings')">✏️ Edit Profile</button>
+          <button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>
+        </div>
+      </div>
+
+      <!-- NAME + BADGES -->
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.02em">${name}</div>
+        ${isVerified ? '<span style="background:#E8F5EE;color:#2A7A52;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">✓ Verified Student</span>' : ''}
+      </div>
+
+      <!-- SCHOOL -->
+      ${school ? `<div style="font-size:13px;color:var(--mid);margin-bottom:12px">🎓 ${school}</div>` : ''}
+
+      <!-- BIO -->
+      ${bio
+        ? `<div style="font-size:13px;color:var(--mid);line-height:1.7;max-width:580px;margin-bottom:16px">${bio}</div>`
+        : `<div style="font-size:13px;color:var(--mid);font-style:italic;margin-bottom:16px;opacity:0.6">No bio yet — add one in Edit Profile</div>`}
+
+      <!-- CONTACT INFO -->
+      <div style="background:var(--bg);border-radius:14px;padding:18px 20px;margin-bottom:20px">
+        <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--mid);margin-bottom:14px">Contact Info</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px">
+            <span style="width:24px;text-align:center">✉️</span>
+            ${email ? `<a href="mailto:${email}" style="color:var(--accent);text-decoration:none">${email}</a>` : '<span style="color:var(--mid);font-style:italic">No email set</span>'}
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px">
+            <span style="width:24px;text-align:center">📞</span>
+            ${phone ? `<a href="tel:${phone}" style="color:var(--accent);text-decoration:none">${phone}</a>` : '<span style="color:var(--mid);font-style:italic">No phone — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add one</button></span>'}
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px">
+            <span style="width:24px;text-align:center">📸</span>
+            ${instagram ? `<a href="https://instagram.com/${instagram.replace('@','')}" target="_blank" style="color:var(--accent);text-decoration:none">${instagram}</a>` : '<span style="color:var(--mid);font-style:italic">No Instagram — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add one</button></span>'}
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;font-size:13px">
+            <span style="width:24px;text-align:center">👻</span>
+            ${snapchat ? `<span style="color:var(--ink)">${snapchat}</span>` : '<span style="color:var(--mid);font-style:italic">No Snapchat — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add one</button></span>'}
+          </div>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
+        <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700" id="pf-active-count">—</div>
+          <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Active listings</div>
+        </div>
+        <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700" id="pf-completed-count">—</div>
+          <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Completed</div>
+        </div>
+        <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700" id="pf-reviews-count">—</div>
+          <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Reviews</div>
+        </div>
+      </div>
+
+      <!-- MY LISTINGS SECTION -->
+      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;margin-bottom:14px">My Listings</div>
+      <div id="pf-listings-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
+        <div style="text-align:center;padding:32px;color:var(--mid);grid-column:1/-1">
+          <div style="width:28px;height:28px;border:2px solid var(--rule);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px"></div>
+          Loading listings…
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Load listings async and fill in
+  if (typeof _sb !== 'undefined' && _sb) {
+    _sb.from('listings').select('*').eq('user_id', currentUser.id).order('created_at', {ascending: false})
+      .then(({ data }) => {
+        const active = (data||[]).filter(l=>l.is_active);
+        const past = (data||[]).filter(l=>!l.is_active);
+        const elA = document.getElementById('pf-active-count');
+        const elP = document.getElementById('pf-completed-count');
+        if (elA) elA.textContent = active.length;
+        if (elP) elP.textContent = past.length;
+        const grid = document.getElementById('pf-listings-grid');
+        if (!grid) return;
+        if (active.length === 0) {
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)"><div style="font-size:36px;margin-bottom:10px">🏠</div><div style="font-weight:600;margin-bottom:10px">No active listings yet</div><button class="btn btn-primary" onclick="closeModal(\'my-profile\');openModal(\'post\')">+ Post a Listing</button></div>';
+        } else {
+          buildListingGrid(grid, active);
+        }
+      }).catch(e => console.warn('Listings fetch error', e));
+
+        // Load review count
+    _sb.from('reviews').select('id', { count: 'exact' }).eq('reviewee_id', currentUser.id)
+      .then(({ count }) => {
+        const el = document.getElementById('pf-reviews-count');
+        if (el) el.textContent = count || 0;
+      });
+  } else {
+    // No Supabase - show zeros
+    ['pf-active-count','pf-completed-count','pf-reviews-count'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '0';
+    });
+    const grid = document.getElementById('pf-listings-grid');
+    if (grid) grid.innerHTML = '<div style="text-align:center;padding:32px;color:var(--mid);grid-column:1/-1"><button class=\'btn btn-primary\' onclick=\'closeModal(&quot;my-profile&quot;);openModal(&quot;post&quot;)\'>+ Post a Listing</button></div>';
+  }
+}
+
+// ---- MY LISTINGS ----
+async function openMyListings() {
+  if (!currentUser) { openModal('auth'); return; }
+  openModal('my-listings');
+  const grid = document.getElementById('my-listings-grid');
+  grid.innerHTML = '<div style="text-align:center;padding:40px;color:var(--mid)">Loading…</div>';
+
+  let myListings = sampleListings.filter(l => l.user_id === currentUser.id);
+
+  // Also try fetching from Supabase
+  if (typeof _sb !== 'undefined' && _sb) {
+    const { data } = await _sb.from('listings').select('*').eq('user_id', currentUser.id).eq('is_active', true);
+    if (data && data.length > 0) {
+      myListings = data.map(l => ({
+        id: l.id, emoji: '🏠', photo: l.photo_url,
+        type: l.type, school: l.school, address: l.address,
+        rent: l.rent, roomType: l.room_type, residents: l.residents,
+        user_id: l.user_id,
+      }));
+    }
+  }
+
+  if (myListings.length === 0) {
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--mid)">
+      <div style="font-size:40px;margin-bottom:12px">🏠</div>
+      <div style="font-weight:600;margin-bottom:8px">No listings yet</div>
+      <button class="btn btn-primary" onclick="closeModal('my-listings');openModal('post')">+ Post a Listing</button>
+    </div>`;
+    return;
+  }
+
+  grid.innerHTML = myListings.map(l => `
+    <div class="card" style="cursor:pointer" onclick="closeModal('my-listings');openListing('${l.id}')">
+      <div class="card-img">
+        ${l.photo ? `<img src="${l.photo}" style="width:100%;height:100%;object-fit:cover">` : `<span class="card-img-placeholder">${l.emoji || '🏠'}</span>`}
+        <div class="card-badge badge-${l.type}">${l.type === 'sublease' ? 'Sublease' : 'Full Transfer'}</div>
+      </div>
+      <div class="card-body">
+        <div class="card-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
+        <div class="card-addr">📍 ${l.address}</div>
+        <div class="card-tags">
+          <span class="tag tag-accent">${l.school || ''}</span>
+          <span class="tag">${l.roomType === 'private' ? '🚪 Private' : l.roomType === 'shared' ? '👥 Shared' : '🏠 Studio'}</span>
+        </div>
+        <div style="margin-top:10px;display:flex;gap:6px">
+          <button class="btn btn-outline" style="flex:1;font-size:11px;padding:6px" onclick="event.stopPropagation();showSuccessFeeModal('${l.id}')">🎉 Mark Transferred</button>
+          <button class="btn btn-ghost" style="font-size:11px;padding:6px;color:#C44A3A" onclick="event.stopPropagation();deleteListing('${l.id}')">🗑</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function deleteListing(id) {
+  if (!confirm('Are you sure you want to delete this listing?')) return;
+  if (typeof _sb !== 'undefined' && _sb) {
+    await _sb.from('listings').update({ is_active: false }).eq('id', id).eq('user_id', currentUser.id);
+  }
+  // Remove from local array too
+  const idx = sampleListings.findIndex(l => String(l.id) === String(id));
+  if (idx > -1) sampleListings.splice(idx, 1);
+  showToast('Listing removed', false);
+  closeModal('my-listings');
+  await refreshListings();
+}
+
+// ---- ACCOUNT SETTINGS ----
+function openAccountSettings() {
+  const p = currentProfile || {};
+  const nameParts = (p.name || '').split(' ');
+  document.getElementById('settings-first-name').value = nameParts[0] || '';
+  document.getElementById('settings-last-name').value = nameParts.slice(1).join(' ') || '';
+  document.getElementById('settings-school').value = p.school || '';
+  document.getElementById('settings-bio').value = p.bio || '';
+  document.getElementById('settings-phone').value = p.phone || '';
+  document.getElementById('settings-instagram').value = p.instagram || '';
+  document.getElementById('settings-snapchat').value = p.snapchat || '';
+  document.getElementById('settings-password').value = '';
+  document.getElementById('settings-password-confirm').value = '';
+}
+
+async function saveAccountSettings() {
+  if (!currentUser) return;
+  const firstName = document.getElementById('settings-first-name').value.trim();
+  const lastName = document.getElementById('settings-last-name').value.trim();
+  const name = [firstName, lastName].filter(Boolean).join(' ');
+  const password = document.getElementById('settings-password').value;
+  const confirm = document.getElementById('settings-password-confirm').value;
+
+  if (password && password !== confirm) { showToast('Passwords do not match', false); return; }
+
+  const updates = {
+    name: name || currentProfile?.name,
+    school: document.getElementById('settings-school').value,
+    bio: document.getElementById('settings-bio').value,
+    phone: document.getElementById('settings-phone').value,
+    instagram: document.getElementById('settings-instagram').value,
+    snapchat: document.getElementById('settings-snapchat').value,
+  };
+
+  if (typeof _sb !== 'undefined' && _sb) {
+    await _sb.from('profiles').upsert({ id: currentUser.id, ...updates });
+    if (password) {
+      const { error } = await _sb.auth.updateUser({ password });
+      if (error) { showToast('Password error: ' + error.message, false); return; }
+    }
+    currentProfile = { ...currentProfile, ...updates };
+  }
+
+  // Update nav
+  const navName = document.getElementById('nav-profile-name');
+  if (navName) navName.textContent = updates.name || 'Profile';
+  const ddName = document.getElementById('dd-name');
+  if (ddName) ddName.textContent = updates.name || 'User';
+  const navCircle = document.getElementById('nav-avatar-circle');
+  if (navCircle) navCircle.textContent = (updates.name || 'U').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+
+  closeModal('account-settings');
+  showToast('✓ Settings saved!', true);
+}
+
+// ---- INIT ----
+// initGoogleMap defined above
+
+document.addEventListener('DOMContentLoaded', async () => {
+  // Wait for Supabase CDN to be ready
+  let attempts = 0;
+  while (typeof window.supabase === 'undefined' && attempts < 20) {
+    await new Promise(r => setTimeout(r, 100));
+    attempts++;
+  }
+  if (typeof window.supabase === 'undefined') {
+    console.error('Supabase CDN failed to load');
+    showToast('Connection error - please refresh', false);
+    return;
+  }
+
+  // Init Supabase now that all scripts are loaded
+  _sb = window.supabase.createClient(
+    'https://tticlvayaqrcblikbzmj.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR0aWNsdmF5YXFyY2JsaWtiem1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ0OTM5ODUsImV4cCI6MjA5MDA2OTk4NX0.QFjJYhV-bNdohAYIOBd-NObMTnCv92V4PmXrmw2lJS4'
+  );
+  await initAuth();
+  await refreshListings();
+  if (currentUser) await loadSavedIds();
+  await handlePaymentReturn();
+});
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCyzOHPz2zY_hKCc0N-EcdHYSST7jvfCps&callback=initGoogleMap" async defer></script>
+</body>
+</html>

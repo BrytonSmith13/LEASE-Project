@@ -759,6 +759,30 @@ textarea { resize: vertical; min-height: 80px; }
   animation: modalIn 0.25s ease both; max-height: 90vh; overflow-y: auto;
 }
 
+/* ADMIN DASHBOARD */
+.admin-page { max-width: 1000px; margin: 0 auto; padding: 32px; }
+.admin-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+.admin-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; }
+.admin-badge { background: #C44A3A; color: #fff; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; margin-left: 10px; }
+.admin-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 14px; overflow: hidden; border: 1.5px solid var(--rule); }
+.admin-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--mid); padding: 14px 16px; text-align: left; border-bottom: 1.5px solid var(--rule); background: var(--bg); }
+.admin-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.admin-table tr:last-child td { border-bottom: none; }
+.admin-table tr:hover td { background: var(--hover, var(--tag-bg)); }
+.status-badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
+.status-pending { background: #FEF3C7; color: #B45309; }
+.status-active { background: #E8F5EE; color: #2A7A52; }
+.status-rejected { background: #FEE2E2; color: #C44A3A; }
+.admin-actions { display: flex; gap: 6px; }
+.btn-approve { background: var(--accent); color: #fff; border: none; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: background 0.15s; }
+.btn-approve:hover { background: #1f5c3a; }
+.btn-reject { background: transparent; color: #C44A3A; border: 1.5px solid #C44A3A; border-radius: 8px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.15s; }
+.btn-reject:hover { background: #FEE2E2; }
+.admin-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+.admin-stat-card { background: var(--surface); border: 1.5px solid var(--rule); border-radius: 14px; padding: 20px; text-align: center; }
+.admin-stat-num { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; }
+.admin-stat-label { font-size: 12px; color: var(--mid); margin-top: 4px; }
+
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @media (max-width: 768px) {
   nav { padding: 0 16px; }
@@ -779,6 +803,7 @@ textarea { resize: vertical; min-height: 80px; }
     <button class="nav-link active" id="nav-listings" onclick="switchPage('listings')">Listings</button>
     <button class="nav-link" id="nav-map" onclick="switchPage('map')">🗺 Map View</button>
     <button class="nav-link" id="nav-saved" onclick="switchPage('saved')">♥ Saved<span class="nav-badge" id="saved-badge">0</span></button>
+    <button class="nav-link" id="nav-admin" onclick="switchPage('admin')" style="display:none;color:#C44A3A">⚙️ Admin</button>
   </div>
   <div class="nav-right">
     <button class="btn btn-ghost" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:16px;padding:8px 12px;">🌙</button>
@@ -1009,6 +1034,50 @@ textarea { resize: vertical; min-height: 80px; }
     </div>
   </div>
 </div><!-- end #page-map -->
+
+<!-- PAGE: ADMIN -->
+<div id="page-admin" style="display:none">
+  <div class="admin-page">
+    <div class="admin-header">
+      <div>
+        <span class="admin-title">Admin Dashboard</span>
+        <span class="admin-badge" id="admin-pending-badge">0 pending</span>
+      </div>
+      <button class="btn btn-outline" onclick="loadAdminListings()">↻ Refresh</button>
+    </div>
+    <div class="admin-stats">
+      <div class="admin-stat-card">
+        <div class="admin-stat-num" id="admin-total">—</div>
+        <div class="admin-stat-label">Total listings</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-num" id="admin-pending-count" style="color:#B45309">—</div>
+        <div class="admin-stat-label">Pending approval</div>
+      </div>
+      <div class="admin-stat-card">
+        <div class="admin-stat-num" id="admin-active-count" style="color:#2A7A52">—</div>
+        <div class="admin-stat-label">Active listings</div>
+      </div>
+    </div>
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Address</th>
+          <th>School</th>
+          <th>Rent</th>
+          <th>Type</th>
+          <th>Posted by</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="admin-table-body">
+        <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--mid)">Loading…</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
 
 <!-- PAGE: SAVED -->
 <div id="page-saved" style="display:none">
@@ -1436,6 +1505,7 @@ textarea { resize: vertical; min-height: 80px; }
 <div class="toast" id="toast"></div>
 
 <script src="https://js.stripe.com/v3/"></script>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1452,17 +1522,18 @@ function toggleTheme() {
   if (btn) btn.textContent = isDark ? '🌙' : '☀️';
 }
 function switchPage(page) {
-  const pages = ['listings', 'map', 'saved', 'profile'];
+  const pages = ['listings', 'map', 'saved', 'profile', 'admin'];
   pages.forEach(p => {
     const el = document.getElementById('page-' + p);
     if (el) el.style.display = p === page ? '' : 'none';
   });
-  ['listings','map','saved'].forEach(p => {
+  ['listings','map','saved','admin'].forEach(p => {
     const nav = document.getElementById('nav-' + p);
     if (nav) nav.classList.toggle('active', p === page);
   });
   if (page === 'map') { if(typeof renderMap === 'function') renderMap(); }
   if (page === 'saved') { if(typeof renderSavedPage === 'function') renderSavedPage(); }
+  if (page === 'admin') { if(typeof loadAdminListings === 'function') loadAdminListings(); }
 }
 function openModal(name) {
   const el = document.getElementById(name + '-overlay');
@@ -1599,6 +1670,7 @@ async function logIn() {
 
   closeModal('auth');
   showToast('✓ Logged in!', true);
+  showAdminNav();
   await refreshListings();
 }
 
@@ -3307,10 +3379,132 @@ async function saveAccountSettings() {
   showToast('✓ Settings saved!', true);
 }
 
+// ---- ADMIN ----
+const ADMIN_EMAIL = 'brytonsmith13@gmail.com';
+const ADMIN_USER_EMAILS = ['brytonsmith13@gmail.com'];
+
+function isAdmin() {
+  return currentUser && ADMIN_USER_EMAILS.includes(currentUser.email);
+}
+
+function showAdminNav() {
+  const btn = document.getElementById('nav-admin');
+  if (btn) btn.style.display = isAdmin() ? '' : 'none';
+}
+
+async function loadAdminListings() {
+  if (!isAdmin()) { showToast('Access denied', false); return; }
+  const tbody = document.getElementById('admin-table-body');
+  if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--mid)">Loading…</td></tr>';
+
+  try {
+    const { data, error } = await _sb
+      .from('listings')
+      .select('*, profiles(name, email)')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    const listings = data || [];
+    const pending = listings.filter(l => !l.is_active);
+    const active = listings.filter(l => l.is_active);
+
+    // Update stats
+    document.getElementById('admin-total').textContent = listings.length;
+    document.getElementById('admin-pending-count').textContent = pending.length;
+    document.getElementById('admin-active-count').textContent = active.length;
+    document.getElementById('admin-pending-badge').textContent = pending.length + ' pending';
+
+    if (!tbody) return;
+    if (listings.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--mid)">No listings yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = listings.map(l => `
+      <tr>
+        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.address}">${l.address}</td>
+        <td>${l.school || '—'}</td>
+        <td>$${(l.rent||0).toLocaleString()}/mo</td>
+        <td>${l.type === 'sublease' ? 'Sublease' : 'Transfer'}</td>
+        <td>${l.profiles?.name || l.profiles?.email || '—'}</td>
+        <td>${new Date(l.created_at).toLocaleDateString()}</td>
+        <td><span class="status-badge ${l.is_active ? 'status-active' : 'status-pending'}">${l.is_active ? '✓ Active' : '⏳ Pending'}</span></td>
+        <td>
+          <div class="admin-actions">
+            ${!l.is_active ? `<button class="btn-approve" onclick="approveListing('${l.id}')">✓ Approve</button>` : '<span style="font-size:11px;color:var(--mid)">Live</span>'}
+            <button class="btn-reject" onclick="rejectListing('${l.id}')">${l.is_active ? 'Deactivate' : '✕ Reject'}</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  } catch(e) {
+    console.error('Admin load error:', e);
+    showToast('Error loading listings: ' + e.message, false);
+  }
+}
+
+async function approveListing(id) {
+  try {
+    const { error } = await _sb.from('listings').update({ is_active: true }).eq('id', id);
+    if (error) throw error;
+    showToast('✓ Listing approved and live!', true);
+    await loadAdminListings();
+    await refreshListings();
+  } catch(e) {
+    showToast('Error: ' + e.message, false);
+  }
+}
+
+async function rejectListing(id) {
+  if (!confirm('Are you sure you want to remove this listing?')) return;
+  try {
+    const { error } = await _sb.from('listings').update({ is_active: false }).eq('id', id);
+    if (error) throw error;
+    showToast('Listing deactivated', false);
+    await loadAdminListings();
+    await refreshListings();
+  } catch(e) {
+    showToast('Error: ' + e.message, false);
+  }
+}
+
+// ---- EMAIL NOTIFICATIONS ----
+// Using EmailJS - free service, 200 emails/month
+// Setup: go to emailjs.com, create account, get service ID + template ID
+const EMAILJS_SERVICE_ID = 'service_jb14lee';
+const EMAILJS_TEMPLATE_ID = 'template_5hs08tg';
+const EMAILJS_PUBLIC_KEY = 'joAABohraXdcGo6yO';
+
+async function sendListingNotification(listingData) {
+  // Only send if EmailJS is configured
+  if (EMAILJS_SERVICE_ID === 'YOUR_SERVICE_ID') {
+    console.log('EmailJS not configured yet - skipping notification');
+    return;
+  }
+  try {
+    await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, {
+      to_email: ADMIN_EMAIL,
+      from_name: currentProfile?.name || currentUser?.email || 'A user',
+      listing_address: listingData.address,
+      listing_rent: '$' + listingData.rent + '/mo',
+      listing_school: listingData.school,
+      listing_type: listingData.type,
+      user_email: currentUser?.email || '',
+      approve_url: 'https://brytonsmith13.github.io/LEASE-Project',
+    }, EMAILJS_PUBLIC_KEY);
+    console.log('Notification sent to admin');
+  } catch(e) {
+    console.warn('Email notification failed:', e);
+  }
+}
+
 // ---- INIT ----
 // initGoogleMap defined above
 
 document.addEventListener('DOMContentLoaded', async () => {
+  // Init EmailJS
+  if (typeof emailjs !== 'undefined') emailjs.init('joAABohraXdcGo6yO');
+
   // Wait for Supabase CDN to be ready
   let attempts = 0;
   while (typeof window.supabase === 'undefined' && attempts < 20) {

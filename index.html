@@ -1090,7 +1090,7 @@ textarea { resize: vertical; min-height: 80px; }
     <div class="payment-header">
       <div class="payment-icon">🏠</div>
       <div class="payment-title">Publish Your Listing</div>
-      <div class="payment-sub">A one-time $10 fee is required to list on Lease. Your listing goes live immediately after payment.</div>
+      <div class="payment-sub">A one-time $10 fee is required to list on Lease. Your listing will go live within 24 hours after payment is verified.</div>
     </div>
     <div class="payment-breakdown">
       <div class="payment-row"><span>Listing fee</span><span>$10.00</span></div>
@@ -1665,6 +1665,9 @@ async function loadListings() {
 async function postListingToDB(formData) {
   if (!currentUser) { showToast('Please log in to post a listing', false); openModal('auth'); return; }
 
+  // is_active defaults to false until payment verified
+  const isActive = formData.is_active !== undefined ? formData.is_active : false;
+
   const { data, error } = await _sb.from('listings').insert([{
     user_id: currentUser.id,
     type: formData.type,
@@ -1686,6 +1689,7 @@ async function postListingToDB(formData) {
     photo_url: formData.photo || null,
     lat: formData.lat || null,
     lng: formData.lng || null,
+    is_active: isActive,
   }]).select();
 
   if (error) { showToast('Error posting listing: ' + error.message, false); return; }
@@ -2809,19 +2813,11 @@ async function handlePaymentReturn() {
   const payment = params.get('payment');
 
   if (payment === 'success') {
-    // Post the pending listing to DB
-    const pendingStr = sessionStorage.getItem('pendingListing');
-    if (pendingStr) {
-      const listingData = JSON.parse(pendingStr);
-      sessionStorage.removeItem('pendingListing');
-      const result = await postListingToDB(listingData);
-      if (result) {
-        await refreshListings();
-        showToast('🎉 Listing published successfully!', true);
-      }
-    }
-    // Clean URL
-    window.history.replaceState({}, '', '/');
+    sessionStorage.removeItem('pendingListing');
+    sessionStorage.removeItem('paidListingId');
+    showToast('🎉 Payment complete! Your listing is live.', true);
+    await refreshListings();
+    window.history.replaceState({}, '', window.location.pathname);
   } else if (payment === 'transferred') {
     const listingId = params.get('listing');
     if (listingId && typeof _sb !== 'undefined' && _sb) {

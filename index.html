@@ -1090,8 +1090,8 @@ textarea { resize: vertical; min-height: 80px; }
 
 <!-- PAGE: PROFILE -->
 <div id="page-profile" style="display:none">
-  <div id="profile-content" style="min-height:400px"></div>
-</div><!-- end page-profile -->
+
+<!-- page-profile removed -->
 
 <!-- CHAT MODAL -->
 <div class="overlay" id="chat-overlay" onclick="closeIfOverlay(event,'chat')">
@@ -1259,7 +1259,7 @@ textarea { resize: vertical; min-height: 80px; }
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">My Profile</div>
       <button class="modal-close" onclick="closeModal('my-profile')" style="width:34px;height:34px">✕</button>
     </div>
-    <div id="profile-content" style="min-height:500px"></div>
+    <div id="profile-modal-content" style="min-height:500px"></div>
   </div>
 </div>
 
@@ -2556,7 +2556,7 @@ async function openMyProfile() {
 }
 
 async function renderProfilePage(userId, isOwner) {
-  const container = document.getElementById('profile-content');
+  const container = document.getElementById('profile-modal-content');
   if (!container) return;
   container.innerHTML = '<div style="text-align:center;padding:80px;color:var(--mid)"><div style="width:36px;height:36px;border:3px solid var(--rule);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 16px"></div>Loading…</div>';
 
@@ -2929,7 +2929,6 @@ function closeDropdown() {
 
 function renderMyProfilePage() {
   if (!currentUser) { openModal('auth'); return; }
-  renderProfilePage(currentUser.id, true);
 }
 
 async function openMyProfileModal() {
@@ -2971,122 +2970,6 @@ function buildListingCard(l) {
 function buildListingGrid(grid, listings) {
   grid.innerHTML = '';
   listings.forEach(l => grid.appendChild(buildListingCard(l)));
-}
-
-function renderProfileFallback() {
-  const container = document.getElementById('profile-content');
-  if (!container) { console.error('No profile-content div!'); return; }
-
-  const email = currentUser?.email || '';
-  const name = currentProfile?.name || email.split('@')[0] || 'User';
-  const initials = name.split(' ').filter(Boolean).map(w => w[0]).join('').slice(0, 2).toUpperCase() || '?';
-  const school = currentProfile?.school || '';
-  const bio = currentProfile?.bio || '';
-  const phone = currentProfile?.phone || '';
-  const instagram = currentProfile?.instagram || '';
-  const snapchat = currentProfile?.snapchat || '';
-  const isVerified = email.toLowerCase().endsWith('.edu');
-
-  const avatarContent = currentProfile?.avatar_url
-    ? '<img src="' + currentProfile.avatar_url + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%">'
-    : '<span style="font-family:Syne,sans-serif;font-size:30px;font-weight:700;color:#fff">' + initials + '</span>';
-
-  const html = '<div style="background:linear-gradient(135deg,#2A7A52,#0d3d28);height:130px"></div>'
-    + '<div style="padding:0 32px 32px">'
-    + '<div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:-44px;margin-bottom:20px">'
-    + '<div style="width:88px;height:88px;border-radius:50%;background:#2A7A52;display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);box-shadow:0 4px 20px rgba(0,0,0,.15);overflow:hidden">'
-    + avatarContent + '</div>'
-    + '<div style="display:flex;gap:8px;padding-bottom:8px">'
-    + '<button class="btn btn-outline" onclick="openModal(&quot;account-settings&quot;)">✏️ Edit Profile</button>'
-    + '<button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>'
-    + '</div></div>'
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-    + '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">' + name + '</div>'
-    + (isVerified ? '<span style="background:#E8F5EE;color:#2A7A52;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">✓ Verified Student</span>' : '')
-    + '</div>'
-    + (school ? '<div style="font-size:13px;color:var(--mid);margin-bottom:12px">🎓 ' + school + '</div>' : '')
-    + (bio ? '<div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:16px">' + bio + '</div>'
-           : '<div style="font-size:13px;color:var(--mid);font-style:italic;margin-bottom:16px;opacity:.6">No bio yet — add one in Edit Profile</div>')
-    + '<div style="background:var(--bg);border-radius:14px;padding:18px 20px;margin-bottom:20px">'
-    + '<div style="font-family:Syne,sans-serif;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--mid);margin-bottom:14px">Contact Info</div>'
-    + '<div style="display:flex;flex-direction:column;gap:12px">'
-    + '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>✉️</span>'
-    + (email ? '<a href="mailto:' + email + '" style="color:var(--accent);text-decoration:none">' + email + '</a>' : '<span style="color:var(--mid);font-style:italic">No email</span>')
-    + '</div>'
-    + '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>📞</span>'
-    + (phone ? '<a href="tel:' + phone + '" style="color:var(--accent);text-decoration:none">' + phone + '</a>' : '<span style="color:var(--mid);font-style:italic">No phone — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add</button></span>')
-    + '</div>'
-    + '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>📸</span>'
-    + (instagram ? '<a href="https://instagram.com/' + instagram.replace('@','') + '" target="_blank" style="color:var(--accent);text-decoration:none">' + instagram + '</a>' : '<span style="color:var(--mid);font-style:italic">No Instagram — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add</button></span>')
-    + '</div>'
-    + '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>👻</span>'
-    + (snapchat ? '<span>' + snapchat + '</span>' : '<span style="color:var(--mid);font-style:italic">No Snapchat — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add</button></span>')
-    + '</div>'
-    + '</div></div>'
-    + '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:28px">'
-    + '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-active-count" style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">—</div><div style="font-size:11px;color:var(--mid)">Active listings</div></div>'
-    + '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-completed-count" style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">—</div><div style="font-size:11px;color:var(--mid)">Completed</div></div>'
-    + '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-reviews-count" style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">—</div><div style="font-size:11px;color:var(--mid)">Reviews</div></div>'
-    + '</div>'
-    + '<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:700;margin-bottom:16px">My Listings</div>'
-    + '<div id="pf-listings-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">'
-    + '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)">Loading listings…</div>'
-    + '</div>'
-    + '</div>';
-
-  container.innerHTML = html;
-
-  // Load stats and listings from Supabase async
-  if (typeof _sb !== 'undefined' && _sb && currentUser) {
-    _sb.from('listings').select('*').eq('user_id', currentUser.id)
-      .then(function(res) {
-        var data = res.data || [];
-        var active = data.filter(function(l) { return l.is_active; });
-        var past = data.filter(function(l) { return !l.is_active; });
-        var elA = document.getElementById('pf-active-count');
-        var elP = document.getElementById('pf-completed-count');
-        if (elA) elA.textContent = active.length;
-        if (elP) elP.textContent = past.length;
-        var grid = document.getElementById('pf-listings-grid');
-        if (!grid) return;
-        if (active.length === 0) {
-          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)">'
-            + '<div style="font-size:36px;margin-bottom:10px">🏠</div>'
-            + '<div style="font-weight:600;margin-bottom:12px">No active listings yet</div>'
-            + '<button class="btn btn-primary" onclick="closeModal(&quot;my-profile&quot;);openModal(&quot;post&quot;)">+ Post a Listing</button>'
-            + '</div>';
-        } else {
-          grid.innerHTML = '';
-          active.forEach(function(l) { grid.appendChild(buildListingCard(l)); });
-        }
-      }).catch(function(e) { console.warn('listings error', e); });
-
-    _sb.from('reviews').select('id', { count: 'exact' }).eq('reviewee_id', currentUser.id)
-      .then(function(res) {
-        var el = document.getElementById('pf-reviews-count');
-        if (el) el.textContent = res.count || 0;
-      }).catch(function(e) { console.warn('reviews error', e); });
-  } else {
-    var elA = document.getElementById('pf-active-count');
-    var elP = document.getElementById('pf-completed-count');
-    var elR = document.getElementById('pf-reviews-count');
-    if (elA) elA.textContent = '0';
-    if (elP) elP.textContent = '0';
-    if (elR) elR.textContent = '0';
-    var grid = document.getElementById('pf-listings-grid');
-    if (grid) grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)">'
-      + '<button class="btn btn-primary" onclick="closeModal(&quot;my-profile&quot;);openModal(&quot;post&quot;)">+ Post a Listing</button>'
-      + '</div>';
-  }
-}
-
-
-async function openMyProfileModal() {
-  if (!currentUser) { openModal('auth'); return; }
-  closeDropdown();
-  openModal('my-profile');
-  // Small delay to ensure modal is visible before rendering
-  setTimeout(() => renderProfileFallback(), 50);
 }
 
 function buildListingCard(l) {

@@ -1253,7 +1253,7 @@ textarea { resize: vertical; min-height: 80px; }
 </div>
 
 <!-- MY PROFILE MODAL -->
-<div id="my-profile-overlay" style="display:none;z-index:9999;background:rgba(0,0,0,0.6);overflow-y:auto">
+<div id="my-profile-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);overflow-y:auto;pointer-events:none">
   <div id="my-profile-inner" style="background:#FDF9F3;width:100%;max-width:860px;margin:0 auto;min-height:100vh;position:relative;opacity:1">
     <div style="position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">My Profile</div>
@@ -1550,7 +1550,8 @@ function closeModal(name) {
   const el = document.getElementById(name + '-overlay');
   if (!el) return;
   if (name === 'my-profile') {
-    el.style.cssText = 'display:none;z-index:9999;background:rgba(0,0,0,0.6);overflow-y:auto';
+    el.style.display = 'none';
+    el.style.pointerEvents = 'none';
   } else {
     el.classList.remove('open');
   }
@@ -2944,7 +2945,8 @@ async function openMyProfileModal() {
       return;
     }
 
-    overlay.style.cssText = 'display:block;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.6);overflow-y:auto';
+    overlay.style.display = 'block';
+  overlay.style.pointerEvents = 'auto';
 
     const email = currentUser?.email || '';
     const name = (currentProfile && currentProfile.name) ? currentProfile.name : email.split('@')[0] || 'User';

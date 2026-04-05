@@ -2932,336 +2932,105 @@ function renderMyProfilePage() {
 }
 
 async function openMyProfileModal() {
-  if (!currentUser) { openModal('auth'); return; }
-  closeDropdown();
+  try {
+    if (!currentUser) { openModal('auth'); return; }
+    closeDropdown();
 
-  // Show the modal
-  const overlay = document.getElementById('my-profile-overlay');
-  if (!overlay) { console.error('Profile overlay not found!'); return; }
-  overlay.style.display = 'block';
+    const overlay = document.getElementById('my-profile-overlay');
+    const body = document.getElementById('my-profile-body');
 
-  const body = document.getElementById('my-profile-body');
-  if (!body) { console.error('Profile body not found!'); return; }
+    if (!overlay || !body) {
+      alert('Profile modal not found! Please refresh the page.');
+      return;
+    }
 
-  // Build profile immediately from local data
-  const email = currentUser?.email || '';
-  const name = currentProfile?.name || email.split('@')[0] || 'User';
-  const initials = name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase() || '?';
-  const school = currentProfile?.school || '';
-  const bio = currentProfile?.bio || '';
-  const phone = currentProfile?.phone || '';
-  const instagram = currentProfile?.instagram || '';
-  const snapchat = currentProfile?.snapchat || '';
-  const isVerified = email.toLowerCase().endsWith('.edu');
+    overlay.style.display = 'block';
 
-  body.innerHTML =
-    '<div style="background:linear-gradient(135deg,#2A7A52 0%,#0d3d28 100%);height:120px"></div>' +
-    '<div style="padding:0 28px 40px">' +
-      // Avatar + buttons row
-      '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:-40px;margin-bottom:20px">' +
-        '<div style="width:80px;height:80px;border-radius:50%;background:#2A7A52;display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);font-family:Syne,sans-serif;font-size:26px;font-weight:700;color:#fff;flex-shrink:0">' + initials + '</div>' +
-        '<div style="display:flex;gap:8px;padding-bottom:4px">' +
-          '<button class="btn btn-outline" onclick="openModal(&quot;account-settings&quot;)">✏️ Edit Profile</button>' +
-          '<button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>' +
-        '</div>' +
-      '</div>' +
-      // Name + badges
-      '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px">' +
-        '<span style="font-family:Syne,sans-serif;font-size:22px;font-weight:700">' + name + '</span>' +
-        (isVerified ? '<span style="background:#E8F5EE;color:#2A7A52;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:600">✓ Verified Student</span>' : '') +
-      '</div>' +
-      // School
-      (school ? '<div style="font-size:13px;color:var(--mid);margin-bottom:10px">🎓 ' + school + '</div>' : '') +
-      // Bio
-      '<div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:20px">' +
-        (bio || '<em style="opacity:0.6">No bio yet — add one in Edit Profile</em>') +
-      '</div>' +
-      // Contact info card
-      '<div style="background:var(--bg);border-radius:14px;padding:18px 20px;margin-bottom:24px">' +
-        '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--mid);margin-bottom:14px">Contact Info</div>' +
-        '<div style="display:flex;flex-direction:column;gap:12px">' +
-          '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>✉️</span><a href="mailto:' + email + '" style="color:var(--accent);text-decoration:none">' + (email || 'No email') + '</a></div>' +
-          '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>📞</span>' + (phone ? '<a href="tel:' + phone + '" style="color:var(--accent);text-decoration:none">' + phone + '</a>' : '<span style="color:var(--mid);font-style:italic">No phone added</span>') + '</div>' +
-          '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>📸</span>' + (instagram ? '<a href="https://instagram.com/' + instagram.replace('@','') + '" target="_blank" style="color:var(--accent);text-decoration:none">' + instagram + '</a>' : '<span style="color:var(--mid);font-style:italic">No Instagram added</span>') + '</div>' +
-          '<div style="display:flex;align-items:center;gap:12px;font-size:13px"><span>👻</span>' + (snapchat ? '<span>' + snapchat + '</span>' : '<span style="color:var(--mid);font-style:italic">No Snapchat added</span>') + '</div>' +
-        '</div>' +
-      '</div>' +
-      // Stats
-      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' +
-        '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div style="font-family:Syne,sans-serif;font-size:22px;font-weight:700" id="pf-stat-active">—</div><div style="font-size:11px;color:var(--mid);text-transform:uppercase">Active</div></div>' +
-        '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div style="font-family:Syne,sans-serif;font-size:22px;font-weight:700" id="pf-stat-done">—</div><div style="font-size:11px;color:var(--mid);text-transform:uppercase">Completed</div></div>' +
-        '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div style="font-family:Syne,sans-serif;font-size:22px;font-weight:700" id="pf-stat-rev">—</div><div style="font-size:11px;color:var(--mid);text-transform:uppercase">Reviews</div></div>' +
-      '</div>' +
-      // Listings
-      '<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:600;margin-bottom:14px">My Listings</div>' +
-      '<div id="pf-listings" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px">' +
-        '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)">Loading listings…</div>' +
-      '</div>' +
-    '</div>';
+    const email = currentUser?.email || '';
+    const name = (currentProfile && currentProfile.name) ? currentProfile.name : email.split('@')[0] || 'User';
+    const initials = name.split(' ').filter(Boolean).map(function(w){return w[0];}).join('').slice(0,2).toUpperCase() || '?';
+    const school = (currentProfile && currentProfile.school) ? currentProfile.school : '';
+    const bio = (currentProfile && currentProfile.bio) ? currentProfile.bio : '';
+    const phone = (currentProfile && currentProfile.phone) ? currentProfile.phone : '';
+    const instagram = (currentProfile && currentProfile.instagram) ? currentProfile.instagram : '';
+    const snapchat = (currentProfile && currentProfile.snapchat) ? currentProfile.snapchat : '';
 
-  // Load data from Supabase async
-  if (typeof _sb !== 'undefined' && _sb && currentUser) {
-    try {
-      const { data: listings } = await _sb.from('listings').select('*').eq('user_id', currentUser.id).order('created_at', {ascending: false});
-      const active = (listings||[]).filter(l=>l.is_active);
-      const past = (listings||[]).filter(l=>!l.is_active);
+    var html = '';
+    // Banner
+    html += '<div style="background:linear-gradient(135deg,#2A7A52,#0d3d28);height:120px"></div>';
+    html += '<div style="padding:0 28px 40px">';
+    // Avatar + buttons
+    html += '<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:-40px;margin-bottom:20px">';
+    html += '<div style="width:80px;height:80px;border-radius:50%;background:#2A7A52;display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);font-size:26px;font-weight:700;color:#fff;font-family:Syne,sans-serif">' + initials + '</div>';
+    html += '<div style="display:flex;gap:8px">';
+    html += '<button class="btn btn-outline" onclick="openModal(&quot;account-settings&quot;)">✏️ Edit Profile</button>';
+    html += '<button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>';
+    html += '</div></div>';
+    // Name
+    html += '<div style="font-family:Syne,sans-serif;font-size:22px;font-weight:700;margin-bottom:6px">' + name + '</div>';
+    if (school) html += '<div style="font-size:13px;color:var(--mid);margin-bottom:10px">🎓 ' + school + '</div>';
+    // Bio
+    html += '<div style="font-size:13px;color:var(--mid);line-height:1.7;margin-bottom:20px">' + (bio || '<em style="opacity:0.6">No bio yet — add one in Edit Profile</em>') + '</div>';
+    // Contact
+    html += '<div style="background:var(--bg);border-radius:14px;padding:18px 20px;margin-bottom:24px">';
+    html += '<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--mid);margin-bottom:14px">Contact Info</div>';
+    html += '<div style="display:flex;flex-direction:column;gap:12px">';
+    html += '<div style="display:flex;gap:12px;font-size:13px"><span>✉️</span><a href="mailto:' + email + '" style="color:var(--accent);text-decoration:none">' + (email || 'No email') + '</a></div>';
+    html += '<div style="display:flex;gap:12px;font-size:13px"><span>📞</span>' + (phone ? '<a href="tel:' + phone + '" style="color:var(--accent);text-decoration:none">' + phone + '</a>' : '<span style="color:var(--mid);font-style:italic">No phone added</span>') + '</div>';
+    html += '<div style="display:flex;gap:12px;font-size:13px"><span>📸</span>' + (instagram ? '<a href="https://instagram.com/' + instagram.replace('@','') + '" target="_blank" style="color:var(--accent);text-decoration:none">' + instagram + '</a>' : '<span style="color:var(--mid);font-style:italic">No Instagram added</span>') + '</div>';
+    html += '<div style="display:flex;gap:12px;font-size:13px"><span>👻</span>' + (snapchat ? '<span>' + snapchat + '</span>' : '<span style="color:var(--mid);font-style:italic">No Snapchat added</span>') + '</div>';
+    html += '</div></div>';
+    // Stats
+    html += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">';
+    html += '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-stat-active" style="font-size:22px;font-weight:700;font-family:Syne,sans-serif">—</div><div style="font-size:11px;color:var(--mid)">Active</div></div>';
+    html += '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-stat-done" style="font-size:22px;font-weight:700;font-family:Syne,sans-serif">—</div><div style="font-size:11px;color:var(--mid)">Completed</div></div>';
+    html += '<div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center"><div id="pf-stat-rev" style="font-size:22px;font-weight:700;font-family:Syne,sans-serif">—</div><div style="font-size:11px;color:var(--mid)">Reviews</div></div>';
+    html += '</div>';
+    // Listings header
+    html += '<div style="font-family:Syne,sans-serif;font-size:15px;font-weight:600;margin-bottom:14px">My Listings</div>';
+    html += '<div id="pf-listings" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px"><div style="padding:20px;color:var(--mid)">Loading…</div></div>';
+    html += '</div>';
 
-      const el = document.getElementById('pf-stat-active');
-      const el2 = document.getElementById('pf-stat-done');
-      if (el) el.textContent = active.length;
-      if (el2) el2.textContent = past.length;
+    body.innerHTML = html;
 
-      const grid = document.getElementById('pf-listings');
+    // Load from Supabase
+    if (typeof _sb !== 'undefined' && _sb && currentUser) {
+      var res = await _sb.from('listings').select('*').eq('user_id', currentUser.id).order('created_at', {ascending: false});
+      var listings = res.data || [];
+      var active = listings.filter(function(l){ return l.is_active; });
+      var past = listings.filter(function(l){ return !l.is_active; });
+
+      var ea = document.getElementById('pf-stat-active');
+      var ep = document.getElementById('pf-stat-done');
+      if (ea) ea.textContent = active.length;
+      if (ep) ep.textContent = past.length;
+
+      var grid = document.getElementById('pf-listings');
       if (grid) {
         if (active.length === 0) {
-          const noDiv = document.createElement('div');
-          noDiv.style.cssText = 'grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)';
-          noDiv.innerHTML = '<div style="font-size:36px;margin-bottom:10px">&#127968;</div><div style="font-weight:600;margin-bottom:12px">No active listings yet</div>';
-          const postBtn2 = document.createElement('button');
-          postBtn2.className = 'btn btn-primary';
-          postBtn2.textContent = '+ Post a Listing';
-          postBtn2.onclick = function() { document.getElementById('my-profile-overlay').style.display='none'; openModal('post'); };
-          noDiv.appendChild(postBtn2);
-          grid.innerHTML = '';
-          grid.appendChild(noDiv);
+          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)"><div style="font-size:36px;margin-bottom:10px">&#127968;</div><div style="font-weight:600;margin-bottom:12px">No active listings yet</div></div>';
+          var btn = document.createElement('button');
+          btn.className = 'btn btn-primary';
+          btn.textContent = '+ Post a Listing';
+          btn.onclick = function() { overlay.style.display='none'; openModal('post'); };
+          grid.querySelector('div').appendChild(btn);
         } else {
           grid.innerHTML = '';
-          active.forEach(l => {
-            const card = buildListingCard(l);
-            grid.appendChild(card);
-          });
+          active.forEach(function(l) { grid.appendChild(buildListingCard(l)); });
         }
       }
 
-      const { count } = await _sb.from('reviews').select('id', {count:'exact'}).eq('reviewee_id', currentUser.id);
-      const rev = document.getElementById('pf-stat-rev');
-      if (rev) rev.textContent = count || 0;
-    } catch(e) {
-      console.warn('Profile data load error:', e);
+      var revRes = await _sb.from('reviews').select('id', {count:'exact'}).eq('reviewee_id', currentUser.id);
+      var er = document.getElementById('pf-stat-rev');
+      if (er) er.textContent = revRes.count || 0;
     }
-  } else {
-    ['pf-stat-active','pf-stat-done','pf-stat-rev'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = '0';
-    });
-    const grid = document.getElementById('pf-listings');
-    if (grid) {
-      const b = document.createElement('button');
-      b.className = 'btn btn-primary';
-      b.textContent = '+ Post a Listing';
-      b.onclick = function() { document.getElementById('my-profile-overlay').style.display='none'; openModal('post'); };
-      const w = document.createElement('div');
-      w.style.cssText = 'grid-column:1/-1;text-align:center;padding:32px';
-      w.appendChild(b);
-      grid.innerHTML = '';
-      grid.appendChild(w);
-    }
+  } catch(err) {
+    console.error('openMyProfileModal error:', err);
+    alert('Profile error: ' + err.message);
   }
 }
 
-function buildListingCard(l) {
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.style.cursor = 'pointer';
-  div.onclick = () => { closeModal('my-profile'); openListing(l.id); };
-  const imgContent = l.photo_url
-    ? '<img src="' + l.photo_url + '" style="width:100%;height:100%;object-fit:cover">'
-    : '<span class="card-img-placeholder">🏠</span>';
-  const badgeLabel = l.type === 'sublease' ? 'Sublease' : 'Full Transfer';
-  const roomLabel = l.room_type === 'private' ? '🚪 Private' : l.room_type === 'shared' ? '👥 Shared' : '🏠 Studio';
-  div.innerHTML =
-    '<div class="card-img">' + imgContent +
-    '<div class="card-badge badge-' + l.type + '">' + badgeLabel + '</div></div>' +
-    '<div class="card-body">' +
-      '<div class="card-price">$' + l.rent.toLocaleString() + '<span>/mo</span></div>' +
-      '<div class="card-addr">📍 ' + l.address + '</div>' +
-      '<div class="card-tags"><span class="tag tag-accent">' + (l.school||'') + '</span>' +
-      '<span class="tag">' + roomLabel + '</span></div>' +
-      '<div style="margin-top:10px;display:flex;gap:6px">' +
-        '<button class="btn btn-outline" style="flex:1;font-size:11px;padding:6px;color:var(--green);border-color:var(--green)" ' +
-        'onclick="event.stopPropagation();showSuccessFeeModal(\'' + l.id + '\')" >🎉 Mark Transferred</button>' +
-        '<button class="btn btn-ghost" style="font-size:11px;padding:6px;color:#C44A3A" ' +
-        'onclick="event.stopPropagation();deleteListing(\'' + l.id + '\')" >🗑</button>' +
-      '</div>' +
-    '</div>';
-  return div;
-}
 
-function buildListingGrid(grid, listings) {
-  grid.innerHTML = '';
-  listings.forEach(l => grid.appendChild(buildListingCard(l)));
-}
-
-function buildListingCard(l) {
-  const div = document.createElement('div');
-  div.className = 'card';
-  div.style.cursor = 'pointer';
-  div.onclick = () => { closeModal('my-profile'); openListing(l.id); };
-  const imgContent = l.photo_url
-    ? '<img src="' + l.photo_url + '" style="width:100%;height:100%;object-fit:cover">'
-    : '<span class="card-img-placeholder">🏠</span>';
-  const badgeLabel = l.type === 'sublease' ? 'Sublease' : 'Full Transfer';
-  const roomLabel = l.room_type === 'private' ? '🚪 Private' : l.room_type === 'shared' ? '👥 Shared' : '🏠 Studio';
-  div.innerHTML =
-    '<div class="card-img">' + imgContent +
-    '<div class="card-badge badge-' + l.type + '">' + badgeLabel + '</div></div>' +
-    '<div class="card-body">' +
-      '<div class="card-price">$' + l.rent.toLocaleString() + '<span>/mo</span></div>' +
-      '<div class="card-addr">📍 ' + l.address + '</div>' +
-      '<div class="card-tags"><span class="tag tag-accent">' + (l.school||'') + '</span>' +
-      '<span class="tag">' + roomLabel + '</span></div>' +
-      '<div style="margin-top:10px;display:flex;gap:6px">' +
-        '<button class="btn btn-outline" style="flex:1;font-size:11px;padding:6px;color:var(--green);border-color:var(--green)" ' +
-        'onclick="event.stopPropagation();showSuccessFeeModal(\'' + l.id + '\')" >🎉 Mark Transferred</button>' +
-        '<button class="btn btn-ghost" style="font-size:11px;padding:6px;color:#C44A3A" ' +
-        'onclick="event.stopPropagation();deleteListing(\'' + l.id + '\')" >🗑</button>' +
-      '</div>' +
-    '</div>';
-  return div;
-}
-
-function buildListingGrid(grid, listings) {
-  grid.innerHTML = '';
-  listings.forEach(l => grid.appendChild(buildListingCard(l)));
-}
-
-function renderProfileFallback() {
-  const container = document.getElementById('profile-content');
-  if (!container) return;
-
-  const email = currentUser?.email || '';
-  const name = currentProfile?.name || email.split('@')[0] || 'User';
-  const initials = name.split(' ').filter(Boolean).map(w=>w[0]).join('').slice(0,2).toUpperCase() || '?';
-  const school = currentProfile?.school || '';
-  const bio = currentProfile?.bio || '';
-  const phone = currentProfile?.phone || '';
-  const instagram = currentProfile?.instagram || '';
-  const snapchat = currentProfile?.snapchat || '';
-  const isVerified = email.toLowerCase().endsWith('.edu');
-  const avatarBg = currentProfile?.avatar_url
-    ? `<img src="${currentProfile.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
-    : `<span style="font-family:'Syne',sans-serif;font-size:30px;font-weight:700;color:#fff">${initials}</span>`;
-
-  container.innerHTML = `
-    <!-- BANNER -->
-    <div style="background:linear-gradient(135deg,#2A7A52 0%,#1a5c3a 60%,#0d3d28 100%);height:130px"></div>
-
-    <div style="padding:0 32px 32px">
-      <!-- AVATAR ROW -->
-      <div style="display:flex;align-items:flex-end;justify-content:space-between;margin-top:-44px;margin-bottom:16px">
-        <div style="position:relative">
-          <div style="width:88px;height:88px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);box-shadow:0 4px 20px rgba(0,0,0,0.15);overflow:hidden">
-            ${avatarBg}
-          </div>
-          <div onclick="openModal(&quot;account-settings&quot;)" title="Change photo" style="position:absolute;bottom:2px;right:2px;width:26px;height:26px;background:var(--ink);color:#fff;border:2px solid var(--surface);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;cursor:pointer">✏️</div>
-        </div>
-        <div style="display:flex;gap:8px;padding-bottom:8px">
-          <button class="btn btn-outline" onclick="openModal(&quot;account-settings&quot;)">✏️ Edit Profile</button>
-          <button class="btn btn-ghost" onclick="logOut()" style="color:#C44A3A;font-size:12px">Log out</button>
-        </div>
-      </div>
-
-      <!-- NAME + BADGES -->
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
-        <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;letter-spacing:-0.02em">${name}</div>
-        ${isVerified ? '<span style="background:#E8F5EE;color:#2A7A52;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:600">✓ Verified Student</span>' : ''}
-      </div>
-
-      <!-- SCHOOL -->
-      ${school ? `<div style="font-size:13px;color:var(--mid);margin-bottom:12px">🎓 ${school}</div>` : ''}
-
-      <!-- BIO -->
-      ${bio
-        ? `<div style="font-size:13px;color:var(--mid);line-height:1.7;max-width:580px;margin-bottom:16px">${bio}</div>`
-        : `<div style="font-size:13px;color:var(--mid);font-style:italic;margin-bottom:16px;opacity:0.6">No bio yet — add one in Edit Profile</div>`}
-
-      <!-- CONTACT INFO -->
-      <div style="background:var(--bg);border-radius:14px;padding:18px 20px;margin-bottom:20px">
-        <div style="font-family:'Syne',sans-serif;font-size:12px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:var(--mid);margin-bottom:14px">Contact Info</div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div style="display:flex;align-items:center;gap:12px;font-size:13px">
-            <span style="width:24px;text-align:center">✉️</span>
-            ${email ? `<a href="mailto:${email}" style="color:var(--accent);text-decoration:none">${email}</a>` : '<span style="color:var(--mid);font-style:italic">No email set</span>'}
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;font-size:13px">
-            <span style="width:24px;text-align:center">📞</span>
-            ${phone ? `<a href="tel:${phone}" style="color:var(--accent);text-decoration:none">${phone}</a>` : '<span style="color:var(--mid);font-style:italic">No phone — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add one</button></span>'}
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;font-size:13px">
-            <span style="width:24px;text-align:center">📸</span>
-            ${instagram ? `<a href="https://instagram.com/${instagram.replace('@','')}" target="_blank" style="color:var(--accent);text-decoration:none">${instagram}</a>` : '<span style="color:var(--mid);font-style:italic">No Instagram — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add one</button></span>'}
-          </div>
-          <div style="display:flex;align-items:center;gap:12px;font-size:13px">
-            <span style="width:24px;text-align:center">👻</span>
-            ${snapchat ? `<span style="color:var(--ink)">${snapchat}</span>` : '<span style="color:var(--mid);font-style:italic">No Snapchat — <button class="btn btn-ghost" style="font-size:12px;padding:2px 8px;display:inline" onclick="openModal(&quot;account-settings&quot;)">Add one</button></span>'}
-          </div>
-        </div>
-      </div>
-
-      <!-- STATS -->
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">
-        <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center">
-          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700" id="pf-active-count">—</div>
-          <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Active listings</div>
-        </div>
-        <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center">
-          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700" id="pf-completed-count">—</div>
-          <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Completed</div>
-        </div>
-        <div style="background:var(--bg);border-radius:12px;padding:16px;text-align:center">
-          <div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700" id="pf-reviews-count">—</div>
-          <div style="font-size:11px;color:var(--mid);text-transform:uppercase;letter-spacing:0.05em">Reviews</div>
-        </div>
-      </div>
-
-      <!-- MY LISTINGS SECTION -->
-      <div style="font-family:'Syne',sans-serif;font-size:14px;font-weight:600;margin-bottom:14px">My Listings</div>
-      <div id="pf-listings-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px">
-        <div style="text-align:center;padding:32px;color:var(--mid);grid-column:1/-1">
-          <div style="width:28px;height:28px;border:2px solid var(--rule);border-top-color:var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px"></div>
-          Loading listings…
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Load listings async and fill in
-  if (typeof _sb !== 'undefined' && _sb) {
-    _sb.from('listings').select('*').eq('user_id', currentUser.id).order('created_at', {ascending: false})
-      .then(({ data }) => {
-        const active = (data||[]).filter(l=>l.is_active);
-        const past = (data||[]).filter(l=>!l.is_active);
-        const elA = document.getElementById('pf-active-count');
-        const elP = document.getElementById('pf-completed-count');
-        if (elA) elA.textContent = active.length;
-        if (elP) elP.textContent = past.length;
-        const grid = document.getElementById('pf-listings-grid');
-        if (!grid) return;
-        if (active.length === 0) {
-          grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px;color:var(--mid)"><div style="font-size:36px;margin-bottom:10px">🏠</div><div style="font-weight:600;margin-bottom:10px">No active listings yet</div><button class="btn btn-primary" onclick="closeModal(\'my-profile\');openModal(\'post\')">+ Post a Listing</button></div>';
-        } else {
-          buildListingGrid(grid, active);
-        }
-      }).catch(e => console.warn('Listings fetch error', e));
-
-        // Load review count
-    _sb.from('reviews').select('id', { count: 'exact' }).eq('reviewee_id', currentUser.id)
-      .then(({ count }) => {
-        const el = document.getElementById('pf-reviews-count');
-        if (el) el.textContent = count || 0;
-      });
-  } else {
-    // No Supabase - show zeros
-    ['pf-active-count','pf-completed-count','pf-reviews-count'].forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.textContent = '0';
-    });
-    const grid = document.getElementById('pf-listings-grid');
-    if (grid) grid.innerHTML = '<div style="text-align:center;padding:32px;color:var(--mid);grid-column:1/-1"><button class=\'btn btn-primary\' onclick=\'closeModal(&quot;my-profile&quot;);openModal(&quot;post&quot;)\'>+ Post a Listing</button></div>';
-  }
-}
-
-// ---- MY LISTINGS ----
 async function openMyListings() {
   if (!currentUser) { openModal('auth'); return; }
   openModal('my-listings');

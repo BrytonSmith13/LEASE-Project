@@ -65,7 +65,7 @@ nav {
 .btn-ghost { background: transparent; color: var(--mid); }
 .btn-ghost:hover { background: var(--tag-bg); color: var(--ink); }
 .btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: #1f47c7; }
+.btn-primary:hover { background: #1f5c3d; }
 .btn-outline { background: transparent; border: 1.5px solid var(--rule); color: var(--ink); }
 .btn-outline:hover { border-color: var(--ink); }
 
@@ -105,7 +105,7 @@ nav {
 .search-select-wrap { position: relative; }
 .search-select-wrap::after { content: '▾'; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--mid); font-size: 11px; pointer-events: none; }
 .search-btn { background: var(--accent); color: #fff; border: none; font-family: inherit; font-weight: 500; font-size: 13px; padding: 14px 24px; cursor: pointer; transition: background 0.15s; flex-shrink: 0; }
-.search-btn:hover { background: #1f47c7; }
+.search-btn:hover { background: #1f5c3d; }
 
 /* LAYOUT */
 .layout {
@@ -225,6 +225,9 @@ input[type=text], input[type=email], input[type=password], input[type=number], i
   width: 100%; border: 1.5px solid var(--rule); border-radius: 10px; padding: 10px 13px;
   font-family: inherit; font-size: 13px; color: var(--ink); background: var(--surface);
   outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+/* Only remove native arrow where a custom one is provided */
+.search-select {
   appearance: none; -webkit-appearance: none;
 }
 input:focus, select:focus, textarea:focus {

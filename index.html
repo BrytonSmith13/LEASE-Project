@@ -1514,7 +1514,6 @@ textarea { resize: vertical; min-height: 80px; }
 let _sb; // our supabase client (avoids conflict with CDN global)
 
 // Safety wrappers - defined immediately so HTML onclick handlers never crash
-function filterListings() { if(typeof _filterListings === 'function') _filterListings(); }
 function toggleTheme() {
   const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
   document.documentElement.setAttribute('data-theme', isDark ? '' : 'dark');

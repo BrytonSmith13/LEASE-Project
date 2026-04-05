@@ -1253,8 +1253,8 @@ textarea { resize: vertical; min-height: 80px; }
 </div>
 
 <!-- MY PROFILE MODAL -->
-<div id="my-profile-overlay" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,0.5);overflow-y:auto">
-  <div id="my-profile-inner" style="background:var(--surface);width:100%;max-width:860px;margin:0 auto;min-height:100vh;position:relative">
+<div id="my-profile-overlay" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;z-index:9999;background:rgba(0,0,0,0.6);overflow-y:auto">
+  <div id="my-profile-inner" style="background:#FDF9F3;width:100%;max-width:860px;margin:0 auto;min-height:100vh;position:relative;opacity:1">
     <div style="position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
       <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px">My Profile</div>
       <button onclick="document.getElementById('my-profile-overlay').style.display='none'" style="background:var(--tag-bg);border:none;border-radius:8px;width:32px;height:32px;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--ink)">×</button>

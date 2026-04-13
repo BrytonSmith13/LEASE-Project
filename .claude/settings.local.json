@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git -C \"c:/Users/bryto/OneDrive/Desktop/LeaseProject/LEASE-Project\" show HEAD:index.html)"
+    ]
+  }
+}

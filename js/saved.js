@@ -22,9 +22,10 @@ function renderSavedPage() {
     return;
   }
   grid.innerHTML = saved.map(l => `
-    <div class="card" onclick="openListing(${l.id})">
+    <div class="card" onclick="openListing('${l.id}')">
       <div class="card-img">
-        <span class="card-img-placeholder">${l.emoji}</span>
+        ${l.photo ? `<img src="${l.photo}" alt="${l.address}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">` : ''}
+        <span class="card-img-placeholder" style="${l.photo ? 'display:none' : ''}">${l.emoji}</span>
         <div class="card-badge badge-${l.type}">${l.type === 'sublease' ? 'Sublease' : 'Full Transfer'}</div>
       </div>
       <div class="card-body">
@@ -37,7 +38,7 @@ function renderSavedPage() {
         </div>
         <div class="card-footer">
           <div class="card-user"><div class="avatar">${l.poster}</div><span class="card-user-name">${l.name}</span></div>
-          <button class="heart-btn saved" id="heart-${l.id}" onclick="event.stopPropagation();toggleSaved(${l.id})">❤️</button>
+          <button class="heart-btn saved" id="heart-${l.id}" onclick="event.stopPropagation();toggleSaved('${l.id}')">❤️</button>
         </div>
       </div>
     </div>

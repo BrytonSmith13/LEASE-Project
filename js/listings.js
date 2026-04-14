@@ -13,6 +13,7 @@ async function loadListings() {
     user_id: l.user_id,
     emoji: '🏠',
     photo: l.photo_url || null,
+    photos: l.photo_urls || (l.photo_url ? [l.photo_url] : []),
     type: l.type,
     housingType: l.housing_type,
     address: l.address,
@@ -23,6 +24,7 @@ async function loadListings() {
     transferFee: l.transfer_fee || 0,
     utilities: l.utilities || 0,
     internet: l.internet || 0,
+    parkingFee: l.parking_fee || 0,
     extras: l.extras || '',
     roomType: l.room_type,
     residents: l.residents,
@@ -55,6 +57,7 @@ async function postListingToDB(formData) {
     transfer_fee: formData.transferFee,
     utilities: formData.utilities,
     internet: formData.internet,
+    parking_fee: formData.parkingFee || 0,
     extras: formData.extras,
     room_type: formData.roomType,
     residents: formData.residents,
@@ -221,7 +224,7 @@ function renderListings(list) {
     return;
   }
   grid.innerHTML = list.map(l => `
-    <div class="card" onclick="openListing(${l.id})">
+    <div class="card" onclick="openListing('${l.id}')">
       <div class="card-img">
         ${l.photo
           ? `<img src="${l.photo}" alt="${l.address}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">`
@@ -246,7 +249,7 @@ function renderListings(list) {
             <span class="card-user-name">${l.name}</span>
           </div>
           <div style="display:flex;align-items:center;gap:8px;">
-            <button class="heart-btn" id="heart-${l.id}" onclick="event.stopPropagation();toggleSaved(${l.id})" title="Save listing">${savedIds.has(l.id) ? '❤️' : '🤍'}</button>
+            <button class="heart-btn" id="heart-${l.id}" onclick="event.stopPropagation();toggleSaved('${l.id}')" title="Save listing">${savedIds.has(l.id) ? '❤️' : '🤍'}</button>
             <span class="card-date">${l.posted}</span>
           </div>
         </div>
@@ -346,11 +349,43 @@ function resetFilters() {
 }
 
 // ---- OPEN LISTING DETAIL ----
-function openListing(id) {
+async function openListing(id) {
   const l = sampleListings.find(x => x.id === id || x.id === String(id) || String(x.id) === String(id));
-  const totalEst = l.rent + l.utilities + l.internet;
+  const totalEst = l.rent + l.utilities + l.internet + (l.parkingFee || 0);
+
+  // Fetch seller profile for social links
+  let sellerProfile = {};
+  if (l.user_id && typeof _sb !== 'undefined') {
+    // Use cached currentProfile if it's the same user
+    if (currentUser && currentProfile && l.user_id === currentUser.id) {
+      sellerProfile = currentProfile;
+    } else {
+      const { data } = await _sb.from('profiles').select('*').eq('id', l.user_id).single();
+      if (data) sellerProfile = data;
+    }
+  }
+
+  const avatarContent = sellerProfile.avatar_url
+    ? `<img src="${sellerProfile.avatar_url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`
+    : `<span style="font-size:16px;font-weight:700;color:#fff">${l.poster}</span>`;
+
+  const socialLinks = [
+    sellerProfile.instagram ? `<a href="https://instagram.com/${sellerProfile.instagram.replace('@','')}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:12px">📸 ${sellerProfile.instagram}</a>` : '',
+    sellerProfile.facebook ? `<a href="${sellerProfile.facebook.startsWith('http') ? sellerProfile.facebook : 'https://' + sellerProfile.facebook}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:12px">🔵 Facebook</a>` : '',
+    sellerProfile.linkedin ? `<a href="${sellerProfile.linkedin.startsWith('http') ? sellerProfile.linkedin : 'https://' + sellerProfile.linkedin}" target="_blank" style="color:var(--accent);text-decoration:none;font-size:12px">💼 LinkedIn</a>` : '',
+    sellerProfile.phone ? `<a href="tel:${sellerProfile.phone}" style="color:var(--accent);text-decoration:none;font-size:12px">📞 ${sellerProfile.phone}</a>` : '',
+  ].filter(Boolean).join('');
+
   document.getElementById('listing-detail').innerHTML = `
-    ${l.photo
+    ${l.photos && l.photos.length > 1 ? `
+    <div class="listing-gallery" id="gallery-${l.id}" style="position:relative;height:260px;overflow:hidden;background:#111">
+      ${l.photos.map((url, i) => `<img src="${url}" data-idx="${i}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:${i===0?1:0};transition:opacity 0.3s">`).join('')}
+      <button onclick="galleryPrev('${l.id}',${l.photos.length})" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.45);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;z-index:2">‹</button>
+      <button onclick="galleryNext('${l.id}',${l.photos.length})" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:rgba(0,0,0,0.45);border:none;color:#fff;border-radius:50%;width:32px;height:32px;font-size:16px;cursor:pointer;z-index:2">›</button>
+      <div style="position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:5px;z-index:2">
+        ${l.photos.map((_, i) => `<div id="gdot-${l.id}-${i}" style="width:6px;height:6px;border-radius:50%;background:${i===0?'#fff':'rgba(255,255,255,0.5)'}"></div>`).join('')}
+      </div>
+    </div>` : l.photo
       ? `<div class="listing-hero" style="padding:0;overflow:hidden"><img src="${l.photo}" style="width:100%;height:100%;object-fit:cover;display:block" alt="${l.address}"></div>`
       : `<div class="listing-hero">${l.emoji}</div>`}
     <div class="listing-body">
@@ -363,14 +398,28 @@ function openListing(id) {
         <button class="modal-close" onclick="closeModal('listing')" style="margin-top:4px">✕</button>
       </div>
 
+      <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--bg);border-radius:14px;margin-bottom:20px;cursor:pointer" onclick="openPublicProfile('${l.user_id}')">
+        <div style="width:48px;height:48px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden">
+          ${sellerProfile.avatar_url
+            ? `<img src="${sellerProfile.avatar_url}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;font-size:17px;font-weight:700;color:#fff">${l.poster}</span>`
+            : `<span style="font-size:17px;font-weight:700;color:#fff">${l.poster}</span>`}
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-weight:600;font-size:14px;margin-bottom:2px;color:var(--accent);text-decoration:underline;text-underline-offset:3px">${sellerProfile.name || l.name}</div>
+          ${sellerProfile.school ? `<div style="font-size:11px;color:var(--mid)">🎓 ${sellerProfile.school}</div>` : ''}
+          ${socialLinks ? `<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px">${socialLinks}</div>` : ''}
+        </div>
+        <button onclick="event.stopPropagation();openChat('${l.id}')" class="btn btn-outline" style="font-size:12px;padding:8px 14px;flex-shrink:0">💬 Message</button>
+      </div>
+
       <div class="listing-grid">
-        <div class="info-item"><div class="info-item-label">Listing Type</div><div class="info-item-val">${l.type === 'sublease' ? '🔄 Sublease' : '📋 Full Transfer'}</div></div>
-        <div class="info-item"><div class="info-item-label">Housing Type</div><div class="info-item-val">${l.housingType === 'mens' ? '🧑 Men&#39;s' : l.housingType === 'womens' ? '👩 Women&#39;s' : l.housingType === 'married' ? '💍 Married' : '🏠 Co-ed'}</div></div>
-        <div class="info-item"><div class="info-item-label">Room Type</div><div class="info-item-val">${l.roomType === 'private' ? '🚪 Private Room' : l.roomType === 'shared' ? '👥 Shared Room' : '🏠 Studio'}</div></div>
-        <div class="info-item"><div class="info-item-label">Residents</div><div class="info-item-val">👤 ${l.residents} total</div></div>
-        <div class="info-item"><div class="info-item-label">Parking</div><div class="info-item-val">🚗 ${l.parking.charAt(0).toUpperCase() + l.parking.slice(1)}</div></div>
-        <div class="info-item"><div class="info-item-label">Lease Start</div><div class="info-item-val">📅 ${l.leaseStart}</div></div>
-        <div class="info-item"><div class="info-item-label">Lease End</div><div class="info-item-val">📅 ${l.leaseEnd}</div></div>
+        <div class="info-item"><div class="info-item-label">Listing Type</div><div class="info-item-val">${l.type === 'sublease' ? 'Sublease' : 'Full Transfer'}</div></div>
+        <div class="info-item"><div class="info-item-label">Housing Type</div><div class="info-item-val">${l.housingType === 'mens' ? "Men's" : l.housingType === 'womens' ? "Women's" : l.housingType === 'married' ? 'Married' : 'Co-ed'}</div></div>
+        <div class="info-item"><div class="info-item-label">Room Type</div><div class="info-item-val">${l.roomType === 'private' ? 'Private Room' : l.roomType === 'shared' ? 'Shared Room' : 'Studio'}</div></div>
+        <div class="info-item"><div class="info-item-label">Residents</div><div class="info-item-val">${l.residents} total</div></div>
+        <div class="info-item"><div class="info-item-label">Parking</div><div class="info-item-val">${l.parking.charAt(0).toUpperCase() + l.parking.slice(1)}</div></div>
+        <div class="info-item"><div class="info-item-label">Lease Start</div><div class="info-item-val">${l.leaseStart}</div></div>
+        <div class="info-item"><div class="info-item-label">Lease End</div><div class="info-item-val">${l.leaseEnd}</div></div>
       </div>
 
       <div class="fees-section">
@@ -378,57 +427,82 @@ function openListing(id) {
         <div class="fee-row"><span>Base Rent</span><span>$${l.rent}/mo</span></div>
         <div class="fee-row"><span>Est. Utilities</span><span>${l.utilities ? '$' + l.utilities + '/mo' : 'Included'}</span></div>
         <div class="fee-row"><span>Internet</span><span>${l.internet ? '$' + l.internet + '/mo' : 'Included'}</span></div>
+        <div class="fee-row"><span>Parking</span><span>${l.parkingFee ? '$' + l.parkingFee + '/mo' : 'Included'}</span></div>
         ${l.extras ? `<div class="fee-row"><span>Other</span><span>${l.extras}</span></div>` : ''}
         ${l.transferFee > 0 ? `<div class="fee-row"><span>Transfer Fee (one-time)</span><span>$${l.transferFee}</span></div>` : ''}
         <div class="fee-row" style="margin-top:4px"><span>Est. Monthly Total</span><span style="color:var(--accent);font-weight:600">~$${totalEst}/mo</span></div>
       </div>
-      <div class="lease-fee-row">
-        <span class="lease-fee-label">🏷️ Lease Platform Fee (1.5%)</span>
-        <span class="lease-fee-amount">$${((l.rent + (l.transferFee || 0)) * 0.015).toFixed(2)} <span style="font-size:11px;font-weight:400;opacity:0.8">one-time</span></span>
-      </div>
-      <p style="font-size:11px;color:var(--mid);margin-bottom:20px;margin-top:6px">Calculated on first month's rent${l.transferFee > 0 ? ' + $' + l.transferFee + ' transfer fee' : ''}. Collected upon successful transfer.</p>
-
       ${l.desc ? `<p style="font-size:13px;color:var(--mid);margin-bottom:24px;line-height:1.7">${l.desc}</p>` : ''}
 
       <div class="contact-section">
-        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="openChat('${l.id}')">💬 Message ${l.name}</button>
-        <button class="btn btn-outline" onclick="showToast('Copied: ${l.phone}', false)">📞 ${l.phone}</button>
-        <button class="heart-btn" style="font-size:22px;padding:6px" onclick="toggleSaved(${l.id})" id="detail-heart-${l.id}">${savedIds.has(l.id) ? '❤️' : '🤍'}</button>
+        <button class="btn btn-primary" style="flex:1;justify-content:center" onclick="openChat('${l.id}')">💬 Message ${sellerProfile.name || l.name}</button>
+        <button class="btn btn-outline" style="padding:10px 14px" onclick="shareListing('${l.id}')" title="Share listing">↗ Share</button>
+        <button class="btn btn-outline" style="padding:10px 14px" onclick="emailListing('${l.id}')" title="Email listing">✉️</button>
+        <button class="heart-btn" style="font-size:22px;padding:6px" onclick="toggleSaved('${l.id}')" id="detail-heart-${l.id}">${savedIds.has(l.id) ? '❤️' : '🤍'}</button>
       </div>
-      ${currentUser && l.user_id === currentUser.id ? `
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--rule)">
-        <button class="btn btn-outline" style="width:100%;justify-content:center;color:var(--green);border-color:var(--green)" onclick="closeModal('listing');showSuccessFeeModal('${l.id}')">🎉 Mark as Transferred — Pay 5% Success Fee</button>
-      </div>` : ''}
     </div>
   `;
+  window.history.replaceState({}, '', '?listing=' + id);
   openModal('listing');
 }
 
-// ---- FEE SUMMARY ----
-function updateFeeSummary() {
-  const rent = parseFloat(document.getElementById('post-rent').value);
-  const display = document.getElementById('fee-amount-display');
-  const note = document.getElementById('fee-calc-note');
-  if (rent && rent > 0) {
-    const fee = (rent * 0.015).toFixed(2);
-    display.innerHTML = `$${fee}<span> platform fee</span>`;
-    note.textContent = `1.5% × $${rent.toLocaleString()} base rent = $${fee} paid to Lease upon successful transfer.`;
+
+// ---- SHARE LISTING ----
+
+async function shareListing(id) {
+  const l = sampleListings.find(x => String(x.id) === String(id));
+  if (!l) return;
+  const url = window.location.origin + window.location.pathname + '?listing=' + id;
+  const parts = [
+    `Check out this $${l.rent.toLocaleString()}/mo lease at ${l.address}!`,
+    l.leaseStart ? `Available ${l.leaseStart} – ${l.leaseEnd}.` : '',
+    url,
+  ].filter(Boolean);
+  const msg = parts.join(' ');
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: `$${l.rent.toLocaleString()}/mo — ${l.address}`, text: msg, url });
+    } catch (e) {
+      if (e.name !== 'AbortError') copyToClipboard(msg);
+    }
   } else {
-    display.innerHTML = `—<span> platform fee</span>`;
-    note.textContent = 'Enter your base rent above to see your exact fee.';
+    copyToClipboard(msg);
   }
 }
 
-function updateFeePreview() {
-  const rent = parseFloat(document.getElementById('post-rent').value) || 0;
-  const fee = parseFloat(document.getElementById('post-fee').value) || 0;
-  const base = rent + fee;
-  const leaseFee = (base * 0.015).toFixed(2);
-  const preview = document.getElementById('post-fee-preview');
-  if (preview) {
-    preview.textContent = base > 0
-      ? `Your estimated Lease fee: $${leaseFee} (based on $${rent.toLocaleString()} rent${fee > 0 ? ` + $${fee} transfer fee` : ''})`
-      : '';
+function emailListing(id) {
+  const l = sampleListings.find(x => String(x.id) === String(id));
+  if (!l) return;
+  const url = window.location.origin + window.location.pathname + '?listing=' + id;
+  const subject = `Lease listing: $${l.rent.toLocaleString()}/mo at ${l.address}`;
+  const body = [
+    'Hey! I found this lease listing you might be interested in:',
+    '',
+    `Address: ${l.address}`,
+    `Rent: $${l.rent.toLocaleString()}/mo`,
+    l.school ? `Near: ${l.school}` : '',
+    `Type: ${l.type === 'sublease' ? 'Sublease' : 'Full Transfer'}`,
+    l.leaseStart ? `Dates: ${l.leaseStart} – ${l.leaseEnd}` : '',
+    '',
+    `View the full listing here: ${url}`,
+  ].filter(Boolean).join('\n');
+  window.open('mailto:?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body));
+}
+
+function copyToClipboard(text) {
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => showToast('Copied! Paste anywhere to share.', true));
+  } else {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    showToast('Copied! Paste anywhere to share.', true);
   }
 }
 
@@ -438,31 +512,89 @@ function handlePhotoUpload(event) {
   if (!files.length) return;
   const previewRow = document.getElementById('photo-preview-row');
   previewRow.style.display = 'flex';
-  document.getElementById('upload-label').textContent = files.length + ' photo(s) selected';
 
-  files.forEach((file, idx) => {
+  files.forEach((file) => {
+    // Store the actual File object for upload later
+    uploadedPhotos.push(file);
+    const idx = uploadedPhotos.length - 1;
+
     const reader = new FileReader();
     reader.onload = (e) => {
-      const dataUrl = e.target.result;
-      if (idx === 0) uploadedPhotos[0] = dataUrl;
-      else uploadedPhotos.push(dataUrl);
-
       const thumb = document.createElement('div');
       thumb.className = 'photo-thumb';
-      thumb.innerHTML = `<img src="${dataUrl}"><button class="photo-thumb-remove" onclick="removePhoto(${uploadedPhotos.length - 1},this.parentNode)">✕</button>`;
+      thumb.dataset.idx = idx;
+      thumb.innerHTML = `<img src="${e.target.result}"><button class="photo-thumb-remove" onclick="removePhoto(this.parentNode)">✕</button>`;
       previewRow.appendChild(thumb);
+      document.getElementById('upload-label').textContent = uploadedPhotos.length + ' photo(s) selected';
     };
     reader.readAsDataURL(file);
   });
 }
 
-function removePhoto(idx, thumbEl) {
+function removePhoto(thumbEl) {
+  const idx = parseInt(thumbEl.dataset.idx);
   uploadedPhotos.splice(idx, 1);
-  thumbEl.remove();
+  // Re-index remaining thumbs
+  const previewRow = document.getElementById('photo-preview-row');
+  previewRow.removeChild(thumbEl);
+  Array.from(previewRow.children).forEach((t, i) => t.dataset.idx = i);
   if (uploadedPhotos.length === 0) {
-    document.getElementById('photo-preview-row').style.display = 'none';
+    previewRow.style.display = 'none';
     document.getElementById('upload-label').textContent = 'Click to upload photos';
+  } else {
+    document.getElementById('upload-label').textContent = uploadedPhotos.length + ' photo(s) selected';
   }
+}
+
+async function uploadListingPhotos(listingId) {
+  if (!uploadedPhotos.length) return [];
+  const urls = [];
+  for (let i = 0; i < uploadedPhotos.length; i++) {
+    const file = uploadedPhotos[i];
+    const ext = file.name.split('.').pop().toLowerCase();
+    const path = listingId + '/' + i + '_' + Date.now() + '.' + ext;
+    const { error } = await _sb.storage.from('listing-photos').upload(path, file, { upsert: true, contentType: file.type });
+    if (error) { console.warn('Photo upload error:', error.message); continue; }
+    const { data } = _sb.storage.from('listing-photos').getPublicUrl(path);
+    urls.push(data.publicUrl);
+  }
+  return urls;
+}
+
+// ---- EDIT LISTING ----
+async function editListing(id) {
+  const { data: l, error } = await _sb.from('listings').select('*').eq('id', id).single();
+  if (error || !l) { showToast('Could not load listing', false); return; }
+
+  // Close any open overlays
+  document.getElementById('my-profile-overlay').style.display = 'none';
+  closeModal('my-listings');
+
+  // Pre-fill the post form
+  document.getElementById('post-edit-id').value = l.id;
+  document.getElementById('post-addr').value = l.address || '';
+  document.getElementById('post-school').value = l.school || '';
+  document.getElementById('post-type').value = l.type || 'sublease';
+  document.getElementById('post-housing').value = l.housing_type || 'coed';
+  document.getElementById('post-rent').value = l.rent || '';
+  document.getElementById('post-fee').value = l.transfer_fee || 0;
+  document.getElementById('post-utilities').value = l.utilities || 0;
+  document.getElementById('post-internet').value = l.internet || 0;
+  document.getElementById('post-parking-fee').value = l.parking_fee || 0;
+  document.getElementById('post-extras').value = l.extras || '';
+  document.getElementById('post-room').value = l.room_type || 'private';
+  document.getElementById('post-residents').value = l.residents || 1;
+  document.getElementById('post-parking').value = l.parking || 'none';
+  document.getElementById('post-beds').value = l.beds || 'Studio';
+  document.getElementById('post-start').value = l.lease_start || '';
+  document.getElementById('post-end').value = l.lease_end || '';
+  document.getElementById('post-desc').value = l.description || '';
+
+  // Update modal title and button
+  document.querySelector('#post-overlay .modal-title').textContent = 'Edit Listing';
+  document.getElementById('post-submit-btn').textContent = 'Save Changes';
+
+  openModal('post');
 }
 
 // ---- POST LISTING ----
@@ -471,6 +603,8 @@ async function postListing() {
   const addr = document.getElementById('post-addr').value;
   const rent = document.getElementById('post-rent').value;
   if (!addr || !rent) { showToast('Please fill in address and rent', false); return; }
+
+  const editId = document.getElementById('post-edit-id').value;
 
   const listingData = {
     type: document.getElementById('post-type').value,
@@ -481,6 +615,7 @@ async function postListing() {
     transferFee: parseInt(document.getElementById('post-fee').value) || 0,
     utilities: parseInt(document.getElementById('post-utilities')?.value) || 0,
     internet: parseInt(document.getElementById('post-internet')?.value) || 0,
+    parkingFee: parseInt(document.getElementById('post-parking-fee')?.value) || 0,
     extras: document.getElementById('post-extras').value,
     roomType: document.getElementById('post-room').value,
     residents: parseInt(document.getElementById('post-residents').value) || 1,
@@ -489,26 +624,82 @@ async function postListing() {
     leaseStart: document.getElementById('post-start').value || '',
     leaseEnd: document.getElementById('post-end').value || '',
     desc: document.getElementById('post-desc').value,
-    photo: uploadedPhotos[0] || null,
+    photo: null, // set after upload
   };
 
   const btn = document.querySelector('#post-overlay .btn-primary');
-  btn.textContent = 'Publishing…';
+  btn.textContent = 'Saving…';
   btn.disabled = true;
 
-  const result = await postListingToDB({ ...listingData, is_active: true });
+  if (editId) {
+    // UPDATE existing listing
+    const { error } = await _sb.from('listings').update({
+      type: listingData.type,
+      housing_type: listingData.housingType,
+      address: listingData.address,
+      school: listingData.school,
+      rent: listingData.rent,
+      transfer_fee: listingData.transferFee,
+      utilities: listingData.utilities,
+      internet: listingData.internet,
+      parking_fee: listingData.parkingFee,
+      extras: listingData.extras,
+      room_type: listingData.roomType,
+      residents: listingData.residents,
+      parking: listingData.parking,
+      beds: listingData.beds,
+      lease_start: listingData.leaseStart,
+      lease_end: listingData.leaseEnd,
+      description: listingData.desc,
+    }).eq('id', editId).eq('user_id', currentUser.id);
 
-  btn.textContent = 'Publish Listing';
-  btn.disabled = false;
+    if (uploadedPhotos.length > 0) {
+      btn.textContent = 'Uploading photos…';
+      const photoUrls = await uploadListingPhotos(editId);
+      if (photoUrls.length > 0) {
+        await _sb.from('listings').update({ photo_url: photoUrls[0], photo_urls: photoUrls }).eq('id', editId);
+      }
+    }
 
-  if (!result) return;
+    btn.textContent = 'Save Changes';
+    btn.disabled = false;
+    document.getElementById('post-edit-id').value = '';
+    document.querySelector('#post-overlay .modal-title').textContent = 'Post a Listing';
+    btn.textContent = 'Publish Listing';
 
-  closeModal('post');
-  uploadedPhotos = [];
-  document.getElementById('photo-preview-row').style.display = 'none';
-  document.getElementById('upload-label').textContent = 'Click to upload photos';
-  showToast('✓ Listing posted!', true);
-  await refreshListings();
+    closeModal('post');
+    uploadedPhotos = [];
+    document.getElementById('photo-preview-row').style.display = 'none';
+    document.getElementById('upload-label').textContent = 'Click to upload photos';
+    if (error) { showToast('Error saving: ' + error.message, false); return; }
+    showToast('✓ Listing updated!', true);
+    await refreshListings();
+  } else {
+    // INSERT new listing
+    const result = await postListingToDB({ ...listingData, is_active: true });
+    if (!result) { btn.textContent = 'Publish Listing'; btn.disabled = false; return; }
+
+    btn.textContent = 'Uploading photos…';
+    const photoUrls = await uploadListingPhotos(result.id);
+    if (photoUrls.length > 0) {
+      await _sb.from('listings').update({ photo_url: photoUrls[0], photo_urls: photoUrls }).eq('id', result.id);
+    }
+
+    btn.textContent = 'Publish Listing';
+    btn.disabled = false;
+
+    closeModal('post');
+    uploadedPhotos = [];
+    document.getElementById('photo-preview-row').style.display = 'none';
+    document.getElementById('upload-label').textContent = 'Click to upload photos';
+    await refreshListings();
+
+    sessionStorage.setItem('paidListingId', result.id);
+    showToast('Listing saved! Redirecting to payment…', true);
+    setTimeout(() => {
+      window.location.href = 'https://buy.stripe.com/test_3cI9AV2zKcza1VcekC6kg00?client_reference_id=' + (currentUser.id || '') + '_listing_' + result.id;
+    }, 1200);
+  }
 }
 
 // ---- REFRESH LISTINGS ----
@@ -518,6 +709,30 @@ async function refreshListings() {
   listings.forEach(l => sampleListings.push(l));
   renderListings(sampleListings);
   document.getElementById('stat-listings').textContent = sampleListings.length;
+}
+
+// ---- GALLERY ----
+const galleryIdx = {};
+
+function galleryNext(id, total) {
+  galleryGo(id, total, 1);
+}
+function galleryPrev(id, total) {
+  galleryGo(id, total, -1);
+}
+function galleryGo(id, total, dir) {
+  const current = galleryIdx[id] || 0;
+  const next = (current + dir + total) % total;
+  galleryIdx[id] = next;
+  const container = document.getElementById('gallery-' + id);
+  if (!container) return;
+  container.querySelectorAll('img').forEach(img => img.style.opacity = 0);
+  const nextImg = container.querySelector(`img[data-idx="${next}"]`);
+  if (nextImg) nextImg.style.opacity = 1;
+  for (let i = 0; i < total; i++) {
+    const dot = document.getElementById('gdot-' + id + '-' + i);
+    if (dot) dot.style.background = i === next ? '#fff' : 'rgba(255,255,255,0.5)';
+  }
 }
 
 // ---- HELPERS ----

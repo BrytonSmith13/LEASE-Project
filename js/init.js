@@ -26,5 +26,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   await initAuth();
   await refreshListings();
   if (currentUser) await loadSavedIds();
+  if (currentUser) { await loadNotifications(); subscribeToNotifications(); }
   await handlePaymentReturn();
+
+  // Deep link: ?listing=<id>
+  const _dlParams = new URLSearchParams(window.location.search);
+  const _dlId = _dlParams.get('listing');
+  if (_dlId) {
+    const _dlListing = sampleListings.find(x => String(x.id) === String(_dlId));
+    if (_dlListing) openListing(_dlListing.id);
+  }
 });

@@ -46,6 +46,7 @@ const ADMIN_USER_EMAILS = ['brytonsmith13@gmail.com'];
 
 const EMAILJS_SERVICE_ID = 'service_jb14lee';
 const EMAILJS_TEMPLATE_ID = 'template_5hs08tg';
+const EMAILJS_DEACTIVATE_TEMPLATE_ID = 'YOUR_DEACTIVATE_TEMPLATE_ID'; // replace after creating template
 const EMAILJS_PUBLIC_KEY = 'joAABohraXdcGo6yO';
 
 // ---- STATIC DATA ----

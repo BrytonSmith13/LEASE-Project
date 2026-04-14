@@ -4,9 +4,30 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Lease — College Lease Marketplace</title>
+
+<!-- SEO -->
+<meta name="description" content="Find and list college apartment subleases and lease transfers near your campus. No agents, no broker fees — just students helping students.">
+<meta name="keywords" content="college sublease, apartment sublease, lease transfer, student housing, BYU housing, UVU housing, college apartments">
+<meta name="author" content="Lease">
+<link rel="canonical" href="https://brytonsmith13.github.io/LEASE-Project/">
+
+<!-- Open Graph (iMessage, Facebook, Discord, Slack previews) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lease">
+<meta property="og:title" content="Lease — College Lease Marketplace">
+<meta property="og:description" content="Find and list college apartment subleases and lease transfers near your campus. No agents, no broker fees.">
+<meta property="og:url" content="https://brytonsmith13.github.io/LEASE-Project/">
+<meta property="og:image" content="https://brytonsmith13.github.io/LEASE-Project/preview.png">
+
+<!-- Twitter / X Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lease — College Lease Marketplace">
+<meta name="twitter:description" content="Find and list college apartment subleases near your campus. No agents, no broker fees.">
+<meta name="twitter:image" content="https://brytonsmith13.github.io/LEASE-Project/preview.png">
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=Instrument+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="stylesheet" href="css/styles.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.css">
 </head>
 <body>
 
@@ -21,6 +42,19 @@
   </div>
   <div class="nav-right">
     <button class="btn btn-ghost" id="theme-toggle" onclick="toggleTheme()" title="Toggle dark mode" style="font-size:16px;padding:8px 12px;">🌙</button>
+    <div id="nav-notif-wrap" style="display:none;position:relative">
+      <button class="btn btn-ghost" onclick="toggleNotifPanel()" style="font-size:18px;padding:8px 10px;position:relative" title="Notifications">
+        🔔
+        <span id="notif-badge" style="display:none;position:absolute;top:4px;right:4px;background:#C44A3A;color:#fff;border-radius:50%;width:16px;height:16px;font-size:9px;font-weight:700;line-height:16px;text-align:center">0</span>
+      </button>
+      <div id="notif-panel" style="display:none;position:absolute;right:0;top:calc(100% + 8px);width:320px;background:var(--surface);border:1.5px solid var(--rule);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.12);z-index:1000;overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center">
+          <span style="font-family:Syne,sans-serif;font-weight:700;font-size:14px">Notifications</span>
+          <button onclick="markAllNotifsRead()" style="font-size:11px;color:var(--accent);background:none;border:none;cursor:pointer;font-weight:600">Mark all read</button>
+        </div>
+        <div id="notif-list" style="max-height:320px;overflow-y:auto"></div>
+      </div>
+    </div>
     <button class="btn btn-ghost" id="nav-login-btn" onclick="openModal('auth')">Log in</button>
     <div class="profile-dropdown-wrap" id="nav-profile-wrap" style="display:none">
       <button class="btn btn-ghost" id="nav-profile-btn" onclick="toggleProfileDropdown()" style="display:flex;align-items:center;gap:6px">
@@ -35,6 +69,9 @@
         </div>
         <button class="dropdown-item" onclick="closeDropdown();openMyProfileModal()">
           <span class="item-icon">👤</span> My Profile
+        </button>
+        <button class="dropdown-item" onclick="closeDropdown();openInbox()">
+          <span class="item-icon">💬</span> Messages
         </button>
         <button class="dropdown-item" onclick="closeDropdown();openMyListings()">
           <span class="item-icon">🏠</span> My Listings
@@ -57,6 +94,24 @@
 
 <!-- PAGE: LISTINGS -->
 <div id="page-listings">
+
+  <!-- GUEST HERO (shown when logged out) -->
+  <div id="guest-hero" style="display:none">
+    <div class="guest-hero-inner">
+      <div class="guest-hero-badge">Student Lease Marketplace</div>
+      <h1 class="guest-hero-title">Find your next <em>college lease</em><br>or pass yours on.</h1>
+      <p class="guest-hero-sub">Browse real subleases and full transfers from students at your school. No agents, no broker fees.</p>
+      <div class="guest-hero-actions">
+        <button class="btn" onclick="switchTab('signup');openModal('auth')" style="font-size:15px;padding:13px 28px;background:#fff;color:#0d3d28;font-weight:600;border-radius:10px">Create free account</button>
+        <button class="btn" onclick="document.getElementById('guest-hero').style.display='none'" style="font-size:15px;padding:13px 28px;border:1.5px solid rgba(255,255,255,0.4);color:#fff;background:transparent;border-radius:10px">Browse listings</button>
+      </div>
+      <div class="guest-hero-stats">
+        <div class="guest-stat"><span id="guest-stat-count" class="guest-stat-num">—</span><span class="guest-stat-lbl">Active listings</span></div>
+        <div class="guest-stat"><span class="guest-stat-num">$0</span><span class="guest-stat-lbl">To browse</span></div>
+        <div class="guest-stat"><span class="guest-stat-num">$35</span><span class="guest-stat-lbl">To post a lease</span></div>
+      </div>
+    </div>
+  </div>
 
   <!-- HERO -->
   <div class="hero">
@@ -277,11 +332,11 @@
       <thead>
         <tr>
           <th>Address</th><th>School</th><th>Rent</th><th>Type</th>
-          <th>Posted by</th><th>Date</th><th>Status</th><th>Actions</th>
+          <th>Posted by</th><th>Date</th><th>Payment</th><th>Status</th><th>Actions</th>
         </tr>
       </thead>
       <tbody id="admin-table-body">
-        <tr><td colspan="8" style="text-align:center;padding:40px;color:var(--mid)">Loading…</td></tr>
+        <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--mid)">Loading…</td></tr>
       </tbody>
     </table>
   </div>
@@ -299,8 +354,38 @@
 <!-- PAGE: PROFILE (placeholder) -->
 <div id="page-profile" style="display:none"></div>
 
+<!-- MODAL: PUBLIC PROFILE -->
+<div class="overlay" id="public-profile-overlay" onclick="closeIfOverlay(event,'public-profile')">
+  <div class="modal" style="max-width:480px;padding:0;overflow:hidden">
+    <div style="background:linear-gradient(135deg,#2A7A52,#0d3d28);height:90px"></div>
+    <div style="padding:0 24px 32px;position:relative">
+      <div style="display:flex;justify-content:space-between;align-items:flex-end;margin-top:-36px;margin-bottom:16px">
+        <div id="pub-avatar" style="width:72px;height:72px;border-radius:50%;background:#2A7A52;display:flex;align-items:center;justify-content:center;border:4px solid var(--surface);font-size:22px;font-weight:700;color:#fff;font-family:Syne,sans-serif;overflow:hidden"></div>
+        <button class="modal-close" onclick="closeModal('public-profile')" style="margin-bottom:4px">✕</button>
+      </div>
+      <div id="pub-name" style="font-family:Syne,sans-serif;font-size:20px;font-weight:700;margin-bottom:4px"></div>
+      <div id="pub-school" style="font-size:12px;color:var(--mid);margin-bottom:12px"></div>
+      <div id="pub-bio" style="font-size:13px;color:var(--mid);line-height:1.6;margin-bottom:20px"></div>
+      <div id="pub-socials" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:20px"></div>
+      <div id="pub-listings" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px"></div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: INBOX -->
+<div class="overlay" id="inbox-overlay" onclick="closeIfOverlay(event,'inbox')">
+  <div class="settings-modal" style="max-width:520px">
+    <div class="modal-header">
+      <div><div class="modal-title">Messages</div><div class="modal-sub">All your conversations</div></div>
+      <button class="modal-close" onclick="closeModal('inbox')">✕</button>
+    </div>
+    <div id="inbox-list" style="display:flex;flex-direction:column;gap:0"></div>
+  </div>
+</div>
+
 <!-- MODAL: CHAT -->
-<div class="overlay" id="chat-overlay" onclick="closeIfOverlay(event,'chat')">
+<div class="overlay" id="chat-overlay" onclick="if(event.target===this)closeChat()">
   <div class="chat-modal" id="chat-modal-inner">
     <div class="chat-header">
       <div class="avatar" id="chat-avatar" style="width:36px;height:36px;font-size:14px">JK</div>
@@ -308,7 +393,7 @@
         <div class="chat-header-name" id="chat-name">Jordan K.</div>
         <div class="chat-header-listing" id="chat-listing">450 N 500 W, Provo</div>
       </div>
-      <button class="modal-close" onclick="closeModal('chat')">✕</button>
+      <button class="modal-close" onclick="closeChat()">✕</button>
     </div>
     <div class="chat-messages" id="chat-messages">
       <div class="chat-msg them">Hey! Is this listing still available?</div>
@@ -448,8 +533,12 @@
       </div>
     </div>
     <div class="form-group">
+      <label>Parking Fee / Month ($)</label>
+      <input type="number" placeholder="0" id="post-parking-fee">
+    </div>
+    <div class="form-group">
       <label>Other Monthly Fees (describe)</label>
-      <input type="text" placeholder="e.g. parking $50, gym $20…" id="post-extras">
+      <input type="text" placeholder="e.g. gym $20, storage $15…" id="post-extras">
     </div>
 
     <div class="section-label">🏠 Unit Details</div>
@@ -539,7 +628,8 @@
         <div class="lease-fee-body" id="fee-calc-note" style="font-size:11px;margin-top:2px;">Enter your base rent above to see your exact fee.</div>
       </div>
     </div>
-    <button class="btn btn-primary btn-full" style="margin-top:12px" onclick="postListing()">Publish Listing</button>
+    <input type="hidden" id="post-edit-id">
+    <button class="btn btn-primary btn-full" style="margin-top:12px" id="post-submit-btn" onclick="postListing()">Publish Listing</button>
   </div>
 </div>
 
@@ -576,7 +666,8 @@
     <div class="form-group"><label>Bio</label><textarea id="edit-bio" placeholder="Tell renters a bit about yourself…"></textarea></div>
     <div class="form-group"><label>Phone / WhatsApp</label><input type="text" id="edit-phone" placeholder="(801) 555-0100"></div>
     <div class="form-group"><label>Instagram handle</label><input type="text" id="edit-instagram" placeholder="@yourhandle"></div>
-    <div class="form-group"><label>Snapchat</label><input type="text" id="edit-snapchat" placeholder="yourusername"></div>
+    <div class="form-group"><label>Facebook</label><input type="text" id="edit-facebook" placeholder="facebook.com/yourprofile"></div>
+    <div class="form-group"><label>LinkedIn</label><input type="text" id="edit-linkedin" placeholder="linkedin.com/in/yourprofile"></div>
     <button class="btn btn-primary btn-full" style="margin-top:8px" onclick="saveAccountSettings()">Save Changes</button>
   </div>
 </div>
@@ -591,46 +682,20 @@
     <div class="payment-header">
       <div class="payment-icon">🏠</div>
       <div class="payment-title">Publish Your Listing</div>
-      <div class="payment-sub">A one-time $10 fee is required to list on Lease. Your listing will go live within 24 hours after payment is verified.</div>
+      <div class="payment-sub">A one-time $35 fee is required to list on Lease. Your listing is live now — payment keeps it active.</div>
     </div>
     <div class="payment-breakdown">
-      <div class="payment-row"><span>Listing fee</span><span>$10.00</span></div>
-      <div class="payment-row"><span>Processing (Stripe)</span><span>~$0.59</span></div>
-      <div class="payment-row total"><span>Total today</span><span>$10.00</span></div>
+      <div class="payment-row"><span>Listing fee</span><span>$35.00</span></div>
+      <div class="payment-row"><span>Processing (Stripe)</span><span>~$1.32</span></div>
+      <div class="payment-row total"><span>Total today</span><span>$35.00</span></div>
     </div>
-    <div class="success-banner" id="listing-fee-success">✓ Payment successful! Publishing your listing…</div>
-    <button class="payment-btn" id="pay-listing-btn" onclick="payListingFee()">💳 Pay $10 &amp; Publish</button>
+    <div class="success-banner" id="listing-fee-success">✓ Payment successful! Your listing is live.</div>
+    <button class="payment-btn" id="pay-listing-btn" onclick="payListingFee()">💳 Pay $35 Listing Fee</button>
     <button class="payment-btn-secondary" onclick="closeModal('payment-listing')">Cancel</button>
     <div class="payment-secure">🔒 Secured by Stripe · SSL encrypted</div>
   </div>
 </div>
 
-<!-- MODAL: PAYMENT — Success Fee -->
-<div class="overlay" id="payment-success-overlay" onclick="closeIfOverlay(event,'payment-success')">
-  <div class="payment-modal">
-    <div class="modal-header" style="margin-bottom:0">
-      <div></div>
-      <button class="modal-close" onclick="closeModal('payment-success')">✕</button>
-    </div>
-    <div class="payment-header">
-      <div class="payment-icon">🎉</div>
-      <div class="payment-title">Mark as Transferred</div>
-      <div class="payment-sub">Congrats on your lease transfer! A 5% success fee applies to your total monthly costs.</div>
-    </div>
-    <div class="payment-breakdown" id="success-fee-breakdown">
-      <div class="payment-row"><span>Base rent</span><span id="sf-rent">—</span></div>
-      <div class="payment-row"><span>Utilities</span><span id="sf-utilities">—</span></div>
-      <div class="payment-row"><span>Internet</span><span id="sf-internet">—</span></div>
-      <div class="payment-row"><span>Other fees</span><span id="sf-other">—</span></div>
-      <div class="payment-row" style="padding-top:8px;border-top:1px solid var(--rule);font-weight:500"><span>Total monthly</span><span id="sf-total-monthly">—</span></div>
-      <div class="payment-row total"><span>5% success fee</span><span id="sf-fee-amount">—</span></div>
-    </div>
-    <div class="success-banner" id="success-fee-success">✓ Payment successful! Your listing has been marked as transferred.</div>
-    <button class="payment-btn" id="pay-success-btn" onclick="paySuccessFee()">💳 Pay Success Fee</button>
-    <button class="payment-btn-secondary" onclick="closeModal('payment-success')">Cancel</button>
-    <div class="payment-secure">🔒 Secured by Stripe · SSL encrypted</div>
-  </div>
-</div>
 
 <!-- MODAL: ACCOUNT SETTINGS -->
 <div class="overlay" id="account-settings-overlay" onclick="closeIfOverlay(event,'account-settings')">
@@ -656,7 +721,8 @@
     <div class="section-label">📞 Contact Info</div>
     <div class="form-group"><label>Phone / WhatsApp</label><input type="text" id="settings-phone" placeholder="(801) 555-0100"></div>
     <div class="form-group"><label>Instagram</label><input type="text" id="settings-instagram" placeholder="@handle"></div>
-    <div class="form-group"><label>Snapchat</label><input type="text" id="settings-snapchat" placeholder="username"></div>
+    <div class="form-group"><label>Facebook</label><input type="text" id="settings-facebook" placeholder="facebook.com/yourprofile"></div>
+    <div class="form-group"><label>LinkedIn</label><input type="text" id="settings-linkedin" placeholder="linkedin.com/in/yourprofile"></div>
 
     <div class="section-label">🔒 Security</div>
     <div class="form-group"><label>New Password</label><input type="password" id="settings-password" placeholder="Leave blank to keep current"></div>
@@ -681,6 +747,20 @@
 </div>
 
 <!-- MY PROFILE (full-page overlay) -->
+<!-- MODAL: Avatar Crop -->
+<div id="avatar-crop-overlay" style="display:none;position:fixed;inset:0;z-index:20000;background:rgba(0,0,0,0.75);display:none;align-items:center;justify-content:center">
+  <div style="background:var(--surface);border-radius:20px;padding:28px;width:90%;max-width:420px;display:flex;flex-direction:column;gap:16px">
+    <div style="font-family:Syne,sans-serif;font-weight:700;font-size:18px">Crop Photo</div>
+    <div style="width:100%;max-height:340px;overflow:hidden;border-radius:10px;background:#111">
+      <img id="crop-image" style="max-width:100%;display:block">
+    </div>
+    <div style="display:flex;gap:10px">
+      <button class="btn btn-ghost" style="flex:1" onclick="cancelCrop()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1" onclick="confirmCrop()">Save Photo</button>
+    </div>
+  </div>
+</div>
+
 <div id="my-profile-overlay" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.6);overflow-y:auto;pointer-events:none">
   <div id="my-profile-inner" style="background:#FDF9F3;width:100%;max-width:860px;margin:0 auto;min-height:100vh;position:relative;opacity:1">
     <div style="position:sticky;top:0;z-index:10;background:var(--surface);border-bottom:1px solid var(--rule);display:flex;align-items:center;justify-content:space-between;padding:16px 24px">
@@ -695,6 +775,7 @@
 <div class="toast" id="toast"></div>
 
 <!-- EXTERNAL SCRIPTS -->
+<script src="https://cdn.jsdelivr.net/npm/cropperjs@1.6.2/dist/cropper.min.js"></script>
 <script src="https://js.stripe.com/v3/"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
@@ -710,6 +791,7 @@
 <script src="js/profile.js"></script>
 <script src="js/payments.js"></script>
 <script src="js/admin.js"></script>
+<script src="js/notifications.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/init.js"></script>
 

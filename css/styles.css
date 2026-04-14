@@ -760,8 +760,8 @@ textarea { resize: vertical; min-height: 80px; }
 .admin-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 700; }
 .admin-badge { background: #C44A3A; color: #fff; border-radius: 20px; padding: 3px 10px; font-size: 12px; font-weight: 600; margin-left: 10px; }
 .admin-table { width: 100%; border-collapse: collapse; background: var(--surface); border-radius: 14px; overflow: hidden; border: 1.5px solid var(--rule); }
-.admin-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--mid); padding: 14px 16px; text-align: left; border-bottom: 1.5px solid var(--rule); background: var(--bg); }
-.admin-table td { padding: 14px 16px; font-size: 13px; border-bottom: 1px solid var(--rule); vertical-align: middle; }
+.admin-table th { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.07em; color: var(--mid); padding: 14px 12px; text-align: left; border-bottom: 1.5px solid var(--rule); background: var(--bg); white-space: nowrap; }
+.admin-table td { padding: 14px 12px; font-size: 13px; border-bottom: 1px solid var(--rule); vertical-align: middle; white-space: nowrap; }
 .admin-table tr:last-child td { border-bottom: none; }
 .admin-table tr:hover td { background: var(--hover, var(--tag-bg)); }
 .status-badge { display: inline-flex; align-items: center; gap: 4px; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; }
@@ -778,12 +778,124 @@ textarea { resize: vertical; min-height: 80px; }
 .admin-stat-num { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; }
 .admin-stat-label { font-size: 12px; color: var(--mid); margin-top: 4px; }
 
+/* ---- GUEST HERO (logged-out landing) ---- */
+#guest-hero {
+  background: linear-gradient(150deg, #0d3d28 0%, #2A7A52 55%, #1a6b40 100%);
+  padding: 72px 32px 60px;
+  text-align: center;
+}
+.guest-hero-inner { max-width: 640px; margin: 0 auto; }
+.guest-hero-badge {
+  display: inline-block;
+  background: rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.9);
+  font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 6px 16px; border-radius: 20px; margin-bottom: 24px;
+}
+.guest-hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(28px, 5vw, 46px);
+  font-weight: 700; line-height: 1.15; margin-bottom: 16px; color: #fff;
+}
+.guest-hero-title em { font-style: italic; color: #7ddfad; font-family: 'Instrument Sans', sans-serif; font-weight: 300; }
+.guest-hero-sub {
+  font-size: 16px; color: rgba(255,255,255,0.78); line-height: 1.6;
+  margin-bottom: 32px; max-width: 500px; margin-left: auto; margin-right: auto;
+}
+.guest-hero-actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+.guest-hero-stats { display: flex; justify-content: center; gap: 48px; flex-wrap: wrap; }
+.guest-stat { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.guest-stat-num { font-family: 'Syne', sans-serif; font-size: 28px; font-weight: 700; color: #fff; }
+.guest-stat-lbl { font-size: 12px; color: rgba(255,255,255,0.6); }
+
 @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 @media (max-width: 768px) {
-  nav { padding: 0 16px; }
-  .hero, .search-bar, .layout { padding-left: 16px; padding-right: 16px; }
-  .layout { grid-template-columns: 1fr; }
+  /* NAV */
+  nav { padding: 0 16px; height: 52px; }
+  .nav-links { gap: 0; }
+  .nav-link { font-size: 12px; padding: 6px 8px; }
+  .nav-link span { display: none; } /* hide badges text on small screens */
+  #nav-map span, #nav-saved span { display: none; }
+  .nav-right { gap: 6px; }
+  #nav-profile-name { display: none; }
+  .post-btn { font-size: 12px; padding: 8px 12px; }
+
+  /* LAYOUT */
+  .hero, .search-bar, .layout { padding-left: 12px; padding-right: 12px; }
+  .layout { grid-template-columns: 1fr; gap: 0; }
   .filters { display: none; }
+  .listings-wrap { padding: 0; }
+
+  /* SEARCH */
+  .search-bar { flex-direction: column; gap: 8px; padding-top: 12px; padding-bottom: 12px; }
+  .search-bar select { width: 100%; }
+
+  /* CARDS */
+  .listings { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .card-price { font-size: 18px; }
+  .card-tags { gap: 4px; }
+  .tag { font-size: 10px; padding: 3px 7px; }
+
+  /* MODALS */
+  .overlay { align-items: flex-end; }
+  .modal {
+    max-width: 100% !important;
+    width: 100%;
+    border-radius: 20px 20px 0 0;
+    max-height: 92vh;
+    overflow-y: auto;
+    margin: 0;
+    padding: 20px 16px 32px;
+  }
+  .modal-title { font-size: 18px; }
+
+  /* LISTING DETAIL */
+  .listing-modal { border-radius: 20px 20px 0 0; max-height: 92vh; overflow-y: auto; }
+  .listing-hero { height: 200px; border-radius: 0; }
+  .listing-body { padding: 16px 16px 24px; }
+  .listing-price { font-size: 26px; }
+  .listing-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .info-item { padding: 10px 12px; }
+  .contact-section { flex-wrap: wrap; gap: 8px; }
+  .contact-section .btn { flex: 1; min-width: 120px; justify-content: center; }
+
+  /* CHAT */
+  .chat-modal { max-width: 100%; border-radius: 20px 20px 0 0; height: 85vh; }
+
+  /* FORMS */
   .form-row { grid-template-columns: 1fr; }
-  .listing-grid { grid-template-columns: 1fr; }
+  .settings-modal { border-radius: 20px 20px 0 0; max-height: 92vh; overflow-y: auto; }
+
+  /* ADMIN */
+  .admin-page { padding: 16px; }
+  .admin-stats { grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+  .admin-stat-card { padding: 12px 8px; }
+  .admin-stat-num { font-size: 20px; }
+  .admin-table-wrap { overflow-x: auto; }
+
+  /* PAYMENT */
+  .payment-modal { border-radius: 20px 20px 0 0; }
+
+  /* MY PROFILE OVERLAY */
+  #my-profile-inner { min-height: auto; }
+
+  /* STAT COUNTS */
+  #stat-listings-wrap { display: none; }
+
+  /* GUEST HERO */
+  #guest-hero { padding: 48px 20px 44px; }
+  .guest-hero-stats { gap: 28px; }
+  .guest-stat-num { font-size: 22px; }
+  .guest-hero-sub { font-size: 14px; }
 }
+
+@media (max-width: 480px) {
+  /* Single column cards on very small screens */
+  .listings { grid-template-columns: 1fr; }
+  .nav-link { font-size: 11px; padding: 6px 6px; }
+  .logo { font-size: 17px; }
+}
+
+#account-settings-overlay { z-index: 10000; }
+#chat-overlay { z-index: 400; }
+#public-profile-overlay { z-index: 500; }

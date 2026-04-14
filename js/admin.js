@@ -12,7 +12,7 @@ function showAdminNav() {
 async function loadAdminListings() {
   if (!isAdmin()) { showToast('Access denied', false); return; }
   const tbody = document.getElementById('admin-table-body');
-  if (tbody) tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--mid)">Loading…</td></tr>';
+  if (tbody) tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--mid)">Loading…</td></tr>';
 
   try {
     const { data, error } = await _sb
@@ -32,18 +32,19 @@ async function loadAdminListings() {
 
     if (!tbody) return;
     if (listings.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--mid)">No listings yet</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--mid)">No listings yet</td></tr>';
       return;
     }
 
     tbody.innerHTML = listings.map(l => `
       <tr>
-        <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.address}">${l.address}</td>
+        <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.address}">${l.address}</td>
         <td>${l.school || '—'}</td>
         <td>$${(l.rent || 0).toLocaleString()}/mo</td>
         <td>${l.type === 'sublease' ? 'Sublease' : 'Transfer'}</td>
         <td>${l.profiles?.name || l.profiles?.email || '—'}</td>
         <td>${new Date(l.created_at).toLocaleDateString()}</td>
+        <td><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;${l.payment_paid ? 'background:#d1fae5;color:#065f46' : 'background:#fee2e2;color:#991b1b'}">${l.payment_paid ? '✓ Paid' : '✕ Unpaid'}</span></td>
         <td><span class="status-badge ${l.is_active ? 'status-active' : 'status-pending'}">${l.is_active ? '✓ Active' : '⏳ Pending'}</span></td>
         <td>
           <div class="admin-actions">
@@ -72,11 +73,35 @@ async function approveListing(id) {
 }
 
 async function rejectListing(id) {
-  if (!confirm('Are you sure you want to remove this listing?')) return;
+  const reason = prompt('Reason for deactivating (sent to user):', 'Payment not received. Please complete your $35 listing fee to reactivate.');
+  if (reason === null) return; // cancelled
+
   try {
-    const { error } = await _sb.from('listings').update({ is_active: false }).eq('id', id);
+    const { data: listing, error } = await _sb.from('listings').update({ is_active: false }).eq('id', id).select('*, profiles(name, email)').single();
     if (error) throw error;
-    showToast('Listing deactivated', false);
+
+    // Send in-app notification
+    if (listing.user_id) {
+      await sendNotification(listing.user_id, `Your listing at ${listing.address} was paused. Reason: ${reason}`, '⚠️');
+    }
+
+    // Send email notification to the user
+    const userEmail = listing.profiles?.email;
+    const userName = listing.profiles?.name || 'there';
+    if (userEmail && EMAILJS_DEACTIVATE_TEMPLATE_ID !== 'YOUR_DEACTIVATE_TEMPLATE_ID') {
+      try {
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_DEACTIVATE_TEMPLATE_ID, {
+          to_email: userEmail,
+          user_name: userName,
+          listing_address: listing.address,
+          reason: reason,
+        }, EMAILJS_PUBLIC_KEY);
+      } catch (emailErr) {
+        console.warn('Email send failed:', emailErr);
+      }
+    }
+
+    showToast('Listing deactivated' + (userEmail ? ' — user notified' : ''), false);
     await loadAdminListings();
     await refreshListings();
   } catch (e) {

@@ -43,6 +43,9 @@ function closeModal(name) {
   } else {
     el.classList.remove('open');
   }
+  if (name === 'listing') {
+    window.history.replaceState({}, '', window.location.pathname);
+  }
 }
 
 function closeIfOverlay(e, name) {
@@ -67,6 +70,11 @@ function showToast(msg, success) {
 }
 
 // ---- NAV ----
+function updateNotifWrap(show) {
+  const wrap = document.getElementById('nav-notif-wrap');
+  if (wrap) wrap.style.display = show ? '' : 'none';
+}
+
 function updateNavForUser() {
   const name = (typeof currentProfile !== 'undefined' && currentProfile?.name) ||
                (typeof currentUser !== 'undefined' && currentUser?.email?.split('@')[0]) || 'Me';
@@ -79,6 +87,9 @@ function updateNavForUser() {
   const ddEmail = document.getElementById('dd-email');
   if (loginBtn) loginBtn.style.display = 'none';
   if (profileWrap) profileWrap.style.display = '';
+  updateNotifWrap(true);
+  const gh = document.getElementById('guest-hero');
+  if (gh) gh.style.display = 'none';
   if (nameEl) nameEl.textContent = name;
   if (circle) circle.textContent = initials;
   if (ddName) ddName.textContent = name;
@@ -90,6 +101,18 @@ function resetNavForGuest() {
   const profileWrap = document.getElementById('nav-profile-wrap');
   if (loginBtn) loginBtn.style.display = '';
   if (profileWrap) profileWrap.style.display = 'none';
+  updateNotifWrap(false);
+  // Show landing hero and populate count
+  const gh = document.getElementById('guest-hero');
+  if (gh) {
+    gh.style.display = '';
+    if (typeof _sb !== 'undefined' && _sb) {
+      _sb.from('listings').select('id', { count: 'exact', head: true }).eq('is_active', true).then(({ count }) => {
+        const el = document.getElementById('guest-stat-count');
+        if (el && count != null) el.textContent = count;
+      });
+    }
+  }
 }
 
 function updateSavedBadge() {

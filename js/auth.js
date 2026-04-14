@@ -6,6 +6,7 @@ async function initAuth() {
     currentUser = session.user;
     await loadProfile(currentUser.id);
     updateNavForUser();
+    showAdminNav();
   } else {
     resetNavForGuest();
   }
@@ -46,7 +47,7 @@ async function signUp() {
   if (error) { showToast(error.message, false); return; }
 
   if (data.user) {
-    await _sb.from('profiles').upsert({ id: data.user.id, name: name.trim(), school });
+    await _sb.from('profiles').upsert({ id: data.user.id, name: name.trim(), school, email });
   }
 
   if (data.user && !data.user.identities?.length === 0) {
@@ -72,6 +73,8 @@ async function logIn() {
   currentUser = data.user;
   await loadProfile(currentUser.id);
   await loadSavedIds();
+  // Keep email in sync in profiles table
+  await _sb.from('profiles').upsert({ id: currentUser.id, email: currentUser.email });
   updateNavForUser();
 
   closeModal('auth');

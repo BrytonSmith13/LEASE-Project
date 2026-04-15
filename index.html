@@ -293,7 +293,14 @@
     <div class="map-sidebar" id="map-sidebar">
       <div class="map-sidebar-header">
         <h3>Listings</h3>
-        <span class="map-count" id="map-count">0 shown</span>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="map-count" id="map-count">0 shown</span>
+          <select id="map-type-select" onchange="setMapType(this.value)" style="font-size:11px;padding:3px 6px;border-radius:8px;border:1.5px solid var(--rule);background:var(--tag-bg);color:var(--ink);font-family:inherit;cursor:pointer">
+            <option value="hybrid">Satellite</option>
+            <option value="roadmap">Map</option>
+            <option value="terrain">Terrain</option>
+          </select>
+        </div>
       </div>
       <div class="map-housing-filter">
         <button class="map-housing-pill active" data-val="" onclick="setMapHousingFilter(this,'')">All</button>

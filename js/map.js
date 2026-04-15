@@ -173,6 +173,10 @@ function setMapHousingFilter(btn, val) {
   renderMap();
 }
 
+function setMapType(type) {
+  if (_gmap) _gmap.setMapTypeId(type);
+}
+
 function closeMapPopup() {
   mapPopupId = null;
   const popup = document.getElementById('map-popup');

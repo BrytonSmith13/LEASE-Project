@@ -42,7 +42,7 @@ async function loadAdminListings() {
         <td>${l.school || '—'}</td>
         <td>$${(l.rent || 0).toLocaleString()}/mo</td>
         <td>${l.type === 'sublease' ? 'Sublease' : 'Transfer'}</td>
-        <td>${l.profiles?.name || l.profiles?.email || '—'}</td>
+        <td><button onclick="openPublicProfile('${l.user_id}')" style="background:none;border:none;color:var(--accent);font-weight:600;cursor:pointer;font-size:13px;padding:0;font-family:inherit;text-decoration:underline;text-underline-offset:3px">${l.profiles?.name || l.profiles?.email || '—'}</button></td>
         <td>${new Date(l.created_at).toLocaleDateString()}</td>
         <td><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;${l.payment_paid ? 'background:#d1fae5;color:#065f46' : 'background:#fee2e2;color:#991b1b'}">${l.payment_paid ? '✓ Paid' : '✕ Unpaid'}</span></td>
         <td><span class="status-badge ${l.is_active ? 'status-active' : 'status-pending'}">${l.is_active ? '✓ Active' : '⏳ Pending'}</span></td>

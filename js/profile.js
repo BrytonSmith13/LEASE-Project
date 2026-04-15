@@ -324,6 +324,7 @@ async function confirmCrop() {
 
       await _sb.from('profiles').upsert({ id: currentUser.id, avatar_url: publicUrl });
       currentProfile = { ...currentProfile, avatar_url: publicUrl };
+      if (typeof updateNavForUser === 'function') updateNavForUser();
 
       const existing = document.getElementById('pf-avatar-img');
       if (existing) {

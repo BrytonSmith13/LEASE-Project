@@ -91,7 +91,14 @@ function updateNavForUser() {
   const gh = document.getElementById('guest-hero');
   if (gh) gh.style.display = 'none';
   if (nameEl) nameEl.textContent = name;
-  if (circle) circle.textContent = initials;
+  if (circle) {
+    const avatarUrl = typeof currentProfile !== 'undefined' && currentProfile?.avatar_url;
+    if (avatarUrl) {
+      circle.innerHTML = `<img src="${avatarUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%">`;
+    } else {
+      circle.textContent = initials;
+    }
+  }
   if (ddName) ddName.textContent = name;
   if (ddEmail && typeof currentUser !== 'undefined') ddEmail.textContent = currentUser?.email || '';
 }

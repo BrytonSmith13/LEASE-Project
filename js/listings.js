@@ -69,6 +69,9 @@ async function postListingToDB(formData) {
     photo_url: formData.photo || null,
     lat: formData.lat || null,
     lng: formData.lng || null,
+    city: formData.city || null,
+    state_abbr: formData.state || null,
+    zip_code: formData.zip || null,
     is_active: isActive,
   }]).select();
 
@@ -416,7 +419,7 @@ async function openListing(id) {
         <div class="info-item"><div class="info-item-label">Listing Type</div><div class="info-item-val">${l.type === 'sublease' ? 'Sublease' : 'Full Transfer'}</div></div>
         <div class="info-item"><div class="info-item-label">Housing Type</div><div class="info-item-val">${l.housingType === 'mens' ? "Men's" : l.housingType === 'womens' ? "Women's" : l.housingType === 'married' ? 'Married' : 'Co-ed'}</div></div>
         <div class="info-item"><div class="info-item-label">Room Type</div><div class="info-item-val">${l.roomType === 'private' ? 'Private Room' : l.roomType === 'shared' ? 'Shared Room' : 'Studio'}</div></div>
-        <div class="info-item"><div class="info-item-label">Residents</div><div class="info-item-val">${l.residents} total</div></div>
+        <div class="info-item"><div class="info-item-label">Residents</div><div class="info-item-val">${l.residents >= 6 ? '6+' : l.residents} total</div></div>
         <div class="info-item"><div class="info-item-label">Parking</div><div class="info-item-val">${l.parking.charAt(0).toUpperCase() + l.parking.slice(1)}</div></div>
         <div class="info-item"><div class="info-item-label">Lease Start</div><div class="info-item-val">${l.leaseStart}</div></div>
         <div class="info-item"><div class="info-item-label">Lease End</div><div class="info-item-val">${l.leaseEnd}</div></div>
@@ -572,7 +575,12 @@ async function editListing(id) {
 
   // Pre-fill the post form
   document.getElementById('post-edit-id').value = l.id;
-  document.getElementById('post-addr').value = l.address || '';
+  // Split stored address back into parts for editing
+  const addrParts = (l.address || '').split(',').map(s => s.trim());
+  document.getElementById('post-addr').value = l.city ? (addrParts[0] || '') : (l.address || '');
+  document.getElementById('post-city').value = l.city || '';
+  document.getElementById('post-state').value = l.state_abbr || 'UT';
+  document.getElementById('post-zip').value = l.zip_code || '';
   document.getElementById('post-school').value = l.school || '';
   document.getElementById('post-type').value = l.type || 'sublease';
   document.getElementById('post-housing').value = l.housing_type || 'coed';
@@ -600,9 +608,13 @@ async function editListing(id) {
 // ---- POST LISTING ----
 async function postListing() {
   if (!currentUser) { showToast('Please log in to post a listing', false); closeModal('post'); openModal('auth'); return; }
-  const addr = document.getElementById('post-addr').value;
+  const street = document.getElementById('post-addr').value.trim();
+  const city = document.getElementById('post-city').value.trim();
+  const state = document.getElementById('post-state').value.trim();
+  const zip = document.getElementById('post-zip').value.trim();
   const rent = document.getElementById('post-rent').value;
-  if (!addr || !rent) { showToast('Please fill in address and rent', false); return; }
+  if (!street || !city || !rent) { showToast('Please fill in address, city, and rent', false); return; }
+  const addr = [street, city, state, zip].filter(Boolean).join(', ');
 
   const editId = document.getElementById('post-edit-id').value;
 
@@ -610,6 +622,9 @@ async function postListing() {
     type: document.getElementById('post-type').value,
     housingType: document.getElementById('post-housing').value || 'coed',
     address: addr,
+    city,
+    state,
+    zip,
     school: document.getElementById('post-school').value || 'Other',
     rent: parseInt(rent),
     transferFee: parseInt(document.getElementById('post-fee').value) || 0,
@@ -631,6 +646,12 @@ async function postListing() {
   btn.textContent = 'Saving…';
   btn.disabled = true;
 
+  // Geocode the address so it shows on the map
+  btn.textContent = 'Locating address…';
+  const coords = await geocodeAddress(listingData.address);
+  listingData.lat = coords.lat;
+  listingData.lng = coords.lng;
+
   if (editId) {
     // UPDATE existing listing
     const { error } = await _sb.from('listings').update({
@@ -651,6 +672,11 @@ async function postListing() {
       lease_start: listingData.leaseStart,
       lease_end: listingData.leaseEnd,
       description: listingData.desc,
+      lat: listingData.lat,
+      lng: listingData.lng,
+      city: listingData.city,
+      state_abbr: listingData.state,
+      zip_code: listingData.zip,
     }).eq('id', editId).eq('user_id', currentUser.id);
 
     if (uploadedPhotos.length > 0) {
@@ -700,6 +726,23 @@ async function postListing() {
       window.location.href = 'https://buy.stripe.com/test_3cI9AV2zKcza1VcekC6kg00?client_reference_id=' + (currentUser.id || '') + '_listing_' + result.id;
     }, 1200);
   }
+}
+
+// ---- GEOCODE ADDRESS ----
+async function geocodeAddress(address) {
+  return new Promise((resolve) => {
+    if (!window.google || !window.google.maps) { resolve({ lat: null, lng: null }); return; }
+    new google.maps.Geocoder().geocode({ address }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        resolve({
+          lat: results[0].geometry.location.lat(),
+          lng: results[0].geometry.location.lng(),
+        });
+      } else {
+        resolve({ lat: null, lng: null });
+      }
+    });
+  });
 }
 
 // ---- REFRESH LISTINGS ----

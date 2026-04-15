@@ -479,8 +479,22 @@
 
     <div class="section-label">📍 Location & School</div>
     <div class="form-group">
-      <label>Full Address</label>
-      <input type="text" placeholder="123 University Ave, Provo, UT 84601" id="post-addr">
+      <label>Street Address</label>
+      <input type="text" placeholder="395 West 200 South" id="post-addr">
+    </div>
+    <div class="form-row" style="grid-template-columns:2fr 1fr 1fr">
+      <div class="form-group">
+        <label>City</label>
+        <input type="text" placeholder="Provo" id="post-city">
+      </div>
+      <div class="form-group">
+        <label>State</label>
+        <input type="text" placeholder="UT" id="post-state" maxlength="2" style="text-transform:uppercase">
+      </div>
+      <div class="form-group">
+        <label>Zip Code</label>
+        <input type="text" placeholder="84601" id="post-zip" maxlength="5">
+      </div>
     </div>
     <div class="form-row">
       <div class="form-group">
@@ -556,7 +570,7 @@
         <select id="post-residents">
           <option value="1">1 (just me)</option>
           <option value="2">2</option><option value="3">3</option>
-          <option value="4">4</option><option value="5">5</option><option value="6+">6+</option>
+          <option value="4">4</option><option value="5">5</option><option value="6">6+</option>
         </select>
       </div>
     </div>
@@ -603,29 +617,17 @@
       <textarea placeholder="Describe the apartment, neighborhood, reason for leaving, anything a renter should know…" id="post-desc"></textarea>
     </div>
 
-    <div class="section-label">📞 Contact Info</div>
-    <div class="form-row">
-      <div class="form-group">
-        <label>Phone / WhatsApp</label>
-        <input type="text" placeholder="(801) 555-0100" id="post-phone">
-      </div>
-      <div class="form-group">
-        <label>Preferred Contact</label>
-        <select>
-          <option>Text / WhatsApp</option>
-          <option>Email</option>
-          <option>Phone call</option>
-        </select>
+    <div style="background:var(--bg);border:1.5px solid var(--rule);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px">
+      <span style="font-size:18px;flex-shrink:0">👤</span>
+      <div style="font-size:13px;color:var(--mid);line-height:1.6">
+        Your <strong style="color:var(--ink)">profile contact info</strong> (phone, email, Instagram, etc.) is automatically shown to interested buyers. Update it anytime in <button onclick="closeModal('post');openModal('account-settings')" style="background:none;border:none;color:var(--accent);font-weight:600;cursor:pointer;font-size:13px;padding:0;font-family:inherit">Account Settings</button>.
       </div>
     </div>
 
-    <div class="lease-fee-disclaimer" id="fee-disclaimer">
-      <div class="lease-fee-icon">ℹ️</div>
-      <div class="lease-fee-text">
-        <div class="lease-fee-title">Lease Platform Fee</div>
-        <div class="lease-fee-body">A one-time fee of <strong>1.5% of one month's base rent</strong> is charged to the seller when your lease is successfully transferred.</div>
-        <div class="lease-fee-amount" id="fee-amount-display">—<span> platform fee</span></div>
-        <div class="lease-fee-body" id="fee-calc-note" style="font-size:11px;margin-top:2px;">Enter your base rent above to see your exact fee.</div>
+    <div style="background:var(--accent-light);border:1.5px solid var(--accent);border-radius:12px;padding:14px 16px;display:flex;align-items:flex-start;gap:12px;margin-top:8px">
+      <span style="font-size:18px;flex-shrink:0">💳</span>
+      <div style="font-size:13px;color:var(--accent);line-height:1.6">
+        <strong>$35 one-time listing fee</strong> — charged via Stripe after publishing. Your listing goes live immediately regardless of payment status.
       </div>
     </div>
     <input type="hidden" id="post-edit-id">

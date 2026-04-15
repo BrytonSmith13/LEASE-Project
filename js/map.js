@@ -52,7 +52,7 @@ function buildGoogleMap(listings) {
     bounds.extend({ lat: l.lat, lng: l.lng });
   });
 
-  if (listings.length > 0) {
+  if (!bounds.isEmpty()) {
     gmap.fitBounds(bounds);
     google.maps.event.addListenerOnce(gmap, 'idle', () => {
       if (gmap.getZoom() > 14) gmap.setZoom(14);
@@ -66,7 +66,7 @@ function renderMap() {
 
   const list = document.getElementById('map-listing-list');
   list.innerHTML = listings.map(l => `
-    <div class="map-card" id="mc-${l.id}" onclick="selectMapListing(${l.id})">
+    <div class="map-card" id="mc-${l.id}" onclick="selectMapListing('${l.id}')">
       <div class="map-card-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
       <div class="map-card-addr">📍 ${l.address}</div>
       <div class="map-card-tags">
@@ -134,7 +134,7 @@ function selectMapListing(id) {
   if (card) { card.classList.add('active'); card.scrollIntoView({ behavior: 'smooth', block: 'nearest' }); }
 
   mapPopupId = id;
-  const l = sampleListings.find(x => x.id === id);
+  const l = sampleListings.find(x => String(x.id) === String(id));
   const popup = document.getElementById('map-popup');
   if (!popup || !l) return;
 
@@ -151,7 +151,7 @@ function selectMapListing(id) {
       <div class="map-popup-item"><div class="map-popup-item-label">Est. Total/mo</div><div class="map-popup-item-val">~$${totalEst}</div></div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-primary" style="flex:1;justify-content:center;font-size:13px" onclick="closeMapPopup();openListing(${l.id})">View Full Listing</button>
+      <button class="btn btn-primary" style="flex:1;justify-content:center;font-size:13px" onclick="closeMapPopup();openListing('${l.id}')">View Full Listing</button>
       <button class="btn btn-outline" style="font-size:13px" onclick="showToast('Message sent!',true)">💬</button>
     </div>
   `;

@@ -295,6 +295,13 @@
         <h3>Listings</h3>
         <span class="map-count" id="map-count">0 shown</span>
       </div>
+      <div class="map-housing-filter">
+        <button class="map-housing-pill active" data-val="" onclick="setMapHousingFilter(this,'')">All</button>
+        <button class="map-housing-pill" data-val="coed" onclick="setMapHousingFilter(this,'coed')">Co-ed</button>
+        <button class="map-housing-pill" data-val="mens" onclick="setMapHousingFilter(this,'mens')">Men's</button>
+        <button class="map-housing-pill" data-val="womens" onclick="setMapHousingFilter(this,'womens')">Women's</button>
+        <button class="map-housing-pill" data-val="married" onclick="setMapHousingFilter(this,'married')">Married</button>
+      </div>
       <div class="map-listing-list" id="map-listing-list"></div>
     </div>
     <div class="map-container">

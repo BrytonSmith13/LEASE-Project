@@ -19,6 +19,7 @@ function buildGoogleMap(listings) {
   const gmap = new google.maps.Map(mapEl, {
     zoom: 11,
     center: { lat: 40.35, lng: -111.75 },
+    mapTypeId: 'hybrid',
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: true,
@@ -163,6 +164,13 @@ function selectMapListing(id) {
       <button class="btn btn-outline" style="font-size:13px" onclick="event.stopPropagation();openChat('${l.id}')">💬</button>
     </div>
   `;
+}
+
+function setMapHousingFilter(btn, val) {
+  document.querySelectorAll('.map-housing-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  activeHousingType = val;
+  renderMap();
 }
 
 function closeMapPopup() {

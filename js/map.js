@@ -1,5 +1,7 @@
 // ---- MAP ----
 
+let _gmap = null; // global reference for panning
+
 // Called by Google Maps API when it loads (set as callback in script URL)
 function initGoogleMap() {
   if (document.getElementById('page-map') && document.getElementById('page-map').style.display !== 'none') {
@@ -58,6 +60,7 @@ function buildGoogleMap(listings) {
       if (gmap.getZoom() > 14) gmap.setZoom(14);
     });
   }
+  _gmap = gmap;
 }
 
 function renderMap() {
@@ -138,21 +141,28 @@ function selectMapListing(id) {
   const popup = document.getElementById('map-popup');
   if (!popup || !l) return;
 
+  // Pan map to listing
+  if (l.lat && l.lng) {
+    if (_gmap) _gmap.panTo({ lat: l.lat, lng: l.lng });
+    else if (leafletMap) leafletMap.panTo([l.lat, l.lng]);
+  }
+
   const totalEst = l.rent + (l.utilities || 0) + (l.internet || 0);
   popup.className = 'map-popup open';
   popup.innerHTML = `
     <button class="map-popup-close" onclick="closeMapPopup()">✕</button>
+    ${l.photo ? `<div style="height:130px;border-radius:10px;overflow:hidden;margin-bottom:12px"><img src="${l.photo}" style="width:100%;height:100%;object-fit:cover"></div>` : ''}
     <div class="map-popup-price">$${l.rent.toLocaleString()}<span>/mo</span></div>
     <div class="map-popup-addr" style="cursor:pointer" onclick="openGoogleMaps(this.dataset.addr)" data-addr="${l.address}">📍 ${l.address} ↗</div>
     <div class="map-popup-grid">
       <div class="map-popup-item"><div class="map-popup-item-label">School</div><div class="map-popup-item-val">${l.school}</div></div>
-      <div class="map-popup-item"><div class="map-popup-item-label">Residents</div><div class="map-popup-item-val">👤 ${l.residents} total</div></div>
+      <div class="map-popup-item"><div class="map-popup-item-label">Residents</div><div class="map-popup-item-val">👤 ${l.residents >= 6 ? '6+' : l.residents} total</div></div>
       <div class="map-popup-item"><div class="map-popup-item-label">Room Type</div><div class="map-popup-item-val">${l.roomType === 'private' ? '🚪 Private' : l.roomType === 'shared' ? '👥 Shared' : '🏠 Studio'}</div></div>
       <div class="map-popup-item"><div class="map-popup-item-label">Est. Total/mo</div><div class="map-popup-item-val">~$${totalEst}</div></div>
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-primary" style="flex:1;justify-content:center;font-size:13px" onclick="closeMapPopup();openListing('${l.id}')">View Full Listing</button>
-      <button class="btn btn-outline" style="font-size:13px" onclick="showToast('Message sent!',true)">💬</button>
+      <button class="btn btn-outline" style="font-size:13px" onclick="event.stopPropagation();openChat('${l.id}')">💬</button>
     </div>
   `;
 }

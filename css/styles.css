@@ -472,10 +472,10 @@ textarea { resize: vertical; min-height: 80px; }
 
 /* POPUP CARD */
 .map-popup {
-  position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+  position: absolute; bottom: 24px; right: 24px;
   background: var(--surface); border-radius: 16px; padding: 20px 24px;
   box-shadow: 0 8px 40px rgba(0,0,0,0.14); border: 1.5px solid var(--rule);
-  min-width: 300px; max-width: 380px; z-index: 10;
+  min-width: 300px; max-width: 340px; z-index: 10;
   animation: fadeUp 0.2s ease both;
   display: none;
 }

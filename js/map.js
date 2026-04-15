@@ -22,15 +22,6 @@ function buildGoogleMap(listings) {
     mapTypeControl: false,
     streetViewControl: false,
     fullscreenControl: true,
-    styles: [
-      { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
-      { featureType: 'transit', stylers: [{ visibility: 'off' }] },
-      { elementType: 'geometry', stylers: [{ color: '#f5f0e8' }] },
-      { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#ffffff' }] },
-      { featureType: 'road.arterial', elementType: 'geometry', stylers: [{ color: '#ede8df' }] },
-      { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#c9e4f0' }] },
-      { featureType: 'landscape.natural', elementType: 'geometry', stylers: [{ color: '#e8f0e0' }] },
-    ]
   });
 
   const bounds = new google.maps.LatLngBounds();

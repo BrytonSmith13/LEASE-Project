@@ -141,10 +141,14 @@ function selectMapListing(id) {
   const popup = document.getElementById('map-popup');
   if (!popup || !l) return;
 
-  // Pan map to listing
+  // Center and zoom map to listing
   if (l.lat && l.lng) {
-    if (_gmap) _gmap.panTo({ lat: l.lat, lng: l.lng });
-    else if (leafletMap) leafletMap.panTo([l.lat, l.lng]);
+    if (_gmap) {
+      _gmap.setCenter({ lat: l.lat, lng: l.lng });
+      _gmap.setZoom(16);
+    } else if (leafletMap) {
+      leafletMap.setView([l.lat, l.lng], 16);
+    }
   }
 
   const totalEst = l.rent + (l.utilities || 0) + (l.internet || 0);

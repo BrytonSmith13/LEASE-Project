@@ -122,6 +122,71 @@ function resetNavForGuest() {
   }
 }
 
+// ---- SCHOOL AUTOCOMPLETE ----
+const SCHOOL_LIST = [
+  'BYU','BYU-Idaho','BYU-Hawaii','UVU','Utah State University','University of Utah','Weber State University',
+  'Southern Utah University','Utah Tech University','Westminster University','Ensign College',
+  'Arizona State University','University of Arizona','Northern Arizona University',
+  'UCLA','UC Berkeley','UC San Diego','UC Davis','UC Santa Barbara','USC','Stanford University','Cal Poly',
+  'University of Nevada Las Vegas','University of Nevada Reno',
+  'Colorado State University','University of Colorado Boulder','University of Denver',
+  'Boise State University','University of Idaho',
+  'University of Wyoming','Montana State University','University of Montana',
+  'New Mexico State University','University of New Mexico',
+  'University of Washington','Washington State University','Seattle University',
+  'Oregon State University','University of Oregon','Portland State University',
+  'Harvard University','MIT','Yale University','Princeton University','Columbia University',
+  'University of Michigan','Michigan State University',
+  'Ohio State University','University of Cincinnati',
+  'University of Texas Austin','Texas A&M University','Texas Tech University',
+  'Florida State University','University of Florida','University of Miami',
+  'Georgia Tech','University of Georgia','Emory University',
+  'University of North Carolina','Duke University','NC State University',
+  'Penn State University','Temple University','Drexel University',
+  'New York University','Fordham University','Hofstra University',
+  'DePaul University','University of Chicago','Northwestern University','Loyola University Chicago',
+  'Purdue University','Indiana University','Notre Dame',
+  'Vanderbilt University','University of Tennessee','Tennessee Tech',
+  'University of Alabama','Auburn University',
+  'Louisiana State University','Tulane University',
+  'University of Missouri','Washington University in St. Louis',
+  'Kansas State University','University of Kansas',
+  'University of Nebraska','Creighton University',
+  'Iowa State University','University of Iowa',
+  'University of Minnesota','Minnesota State University',
+  'University of Wisconsin Madison','Marquette University',
+  'Brigham Young University','Other',
+];
+
+function schoolAutocomplete(input, listId) {
+  listId = listId || 'school-ac-list';
+  const list = document.getElementById(listId);
+  if (!list) return;
+  const val = input.value.trim().toLowerCase();
+  if (!val) { list.style.display = 'none'; return; }
+  const matches = SCHOOL_LIST.filter(s => s.toLowerCase().includes(val)).slice(0, 8);
+  if (matches.length === 0) { list.style.display = 'none'; return; }
+  list.style.display = '';
+  list.innerHTML = matches.map(s => `
+    <div onmousedown="selectSchool('${s.replace(/'/g,"\\'")}','${input.id}','${listId}')"
+      style="padding:10px 14px;cursor:pointer;font-size:13px;border-bottom:1px solid var(--rule)"
+      onmouseover="this.style.background='var(--tag-bg)'" onmouseout="this.style.background=''">
+      ${s}
+    </div>
+  `).join('');
+}
+
+function selectSchool(name, inputId, listId) {
+  const input = document.getElementById(inputId);
+  if (input) input.value = name;
+  closeSchoolAC(listId);
+}
+
+function closeSchoolAC(listId) {
+  const list = document.getElementById(listId || 'school-ac-list');
+  if (list) list.style.display = 'none';
+}
+
 function updateSavedBadge() {
   const badge = document.getElementById('saved-badge');
   if (badge) { badge.textContent = savedIds.size; badge.classList.toggle('show', savedIds.size > 0); }

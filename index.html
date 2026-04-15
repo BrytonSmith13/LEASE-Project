@@ -497,12 +497,10 @@
       </div>
     </div>
     <div class="form-row">
-      <div class="form-group">
+      <div class="form-group" style="position:relative">
         <label>School / University</label>
-        <select id="post-school">
-          <option value="">Select school…</option>
-          <option>BYU</option><option>UVU</option><option>Utah State</option><option>U of U</option><option>Other</option>
-        </select>
+        <input type="text" id="post-school" placeholder="Type your university…" autocomplete="off" oninput="schoolAutocomplete(this)" onblur="setTimeout(()=>closeSchoolAC(),150)">
+        <div id="school-ac-list" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--accent);border-radius:0 0 12px 12px;max-height:220px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.12)"></div>
       </div>
       <div class="form-group">
         <label>Listing Type</label>
@@ -712,11 +710,9 @@
       <div class="form-group"><label>First Name</label><input type="text" id="settings-first-name" placeholder="Alex"></div>
       <div class="form-group"><label>Last Name</label><input type="text" id="settings-last-name" placeholder="Smith"></div>
     </div>
-    <div class="form-group"><label>School</label>
-      <select id="settings-school">
-        <option value="">Select school…</option>
-        <option>BYU</option><option>UVU</option><option>Utah State</option><option>U of U</option><option>Other</option>
-      </select>
+    <div class="form-group" style="position:relative"><label>School</label>
+      <input type="text" id="settings-school" placeholder="Type your university…" autocomplete="off" oninput="schoolAutocomplete(this,'settings-school-ac')" onblur="setTimeout(()=>closeSchoolAC('settings-school-ac'),150)">
+      <div id="settings-school-ac" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--surface);border:1.5px solid var(--accent);border-radius:0 0 12px 12px;max-height:220px;overflow-y:auto;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,0.12)"></div>
     </div>
     <div class="form-group"><label>Bio</label><textarea id="settings-bio" placeholder="Tell renters about yourself…"></textarea></div>
 

@@ -339,6 +339,22 @@
         <tr><td colspan="9" style="text-align:center;padding:40px;color:var(--mid)">Loading…</td></tr>
       </tbody>
     </table>
+
+    <div class="admin-section-divider"></div>
+
+    <div class="admin-admins-section">
+      <div class="admin-admins-header">
+        <div>
+          <div class="admin-admins-title">Admin Users</div>
+          <div class="admin-admins-sub">These users have full admin access.</div>
+        </div>
+      </div>
+      <div class="admin-add-row">
+        <input type="email" id="new-admin-email" placeholder="Enter email address" class="admin-email-input">
+        <button class="btn btn-primary" onclick="addAdmin()" style="font-size:13px;padding:10px 20px">+ Add Admin</button>
+      </div>
+      <div id="admin-list"></div>
+    </div>
   </div>
 </div><!-- end #page-admin -->
 
@@ -480,20 +496,20 @@
     <div class="section-label">📍 Location & School</div>
     <div class="form-group">
       <label>Street Address</label>
-      <input type="text" placeholder="395 West 200 South" id="post-addr" autocomplete="off">
+      <input type="text" placeholder="e.g. 123 Main St" id="post-addr" autocomplete="new-password">
     </div>
     <div class="form-row" style="grid-template-columns:2fr 1fr 1fr">
       <div class="form-group">
         <label>City</label>
-        <input type="text" placeholder="Provo" id="post-city" autocomplete="off">
+        <input type="text" placeholder="e.g. Provo" id="post-city" autocomplete="new-password">
       </div>
       <div class="form-group">
         <label>State</label>
-        <input type="text" placeholder="UT" id="post-state" maxlength="2" style="text-transform:uppercase" autocomplete="off">
+        <input type="text" placeholder="e.g. UT" id="post-state" maxlength="2" style="text-transform:uppercase" autocomplete="new-password">
       </div>
       <div class="form-group">
         <label>Zip Code</label>
-        <input type="text" placeholder="84601" id="post-zip" maxlength="5" autocomplete="off">
+        <input type="text" placeholder="e.g. 84601" id="post-zip" maxlength="5" autocomplete="new-password">
       </div>
     </div>
     <div class="form-row">
@@ -533,6 +549,14 @@
         <input type="number" placeholder="0" id="post-fee" oninput="updateFeePreview()">
         <div class="fee-note">Leave 0 if no transfer fee</div>
       </div>
+    </div>
+    <div class="form-group">
+      <label>Who Pays the Transfer Fee?</label>
+      <select id="post-fee-responsibility">
+        <option value="">Not specified</option>
+        <option value="seller">Seller pays</option>
+        <option value="buyer">Buyer pays</option>
+      </select>
     </div>
     <div class="form-row">
       <div class="form-group">

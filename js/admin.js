@@ -50,6 +50,7 @@ async function loadAdminListings() {
           <div class="admin-actions">
             ${!l.is_active ? `<button class="btn-approve" onclick="approveListing('${l.id}')">✓ Approve</button>` : '<span style="font-size:11px;color:var(--mid)">Live</span>'}
             <button class="btn-reject" onclick="rejectListing('${l.id}')">${l.is_active ? 'Deactivate' : '✕ Reject'}</button>
+            <button class="btn-delete-admin" onclick="adminDeleteListing('${l.id}', '${(l.address || '').replace(/'/g, '\\&#39;')}')">🗑</button>
           </div>
         </td>
       </tr>
@@ -102,6 +103,75 @@ async function rejectListing(id) {
     }
 
     showToast('Listing deactivated' + (userEmail ? ' — user notified' : ''), false);
+    await loadAdminListings();
+    await refreshListings();
+  } catch (e) {
+    showToast('Error: ' + e.message, false);
+  }
+}
+
+// ---- ADMIN MANAGEMENT ----
+
+async function loadAdmins() {
+  const list = document.getElementById('admin-list');
+  if (!list) return;
+
+  const { data, error } = await _sb.from('admins').select('*').order('added_at', { ascending: true });
+  if (error) { list.innerHTML = '<p style="color:var(--mid);font-size:13px">Could not load admins.</p>'; return; }
+
+  const allAdmins = [
+    { email: ADMIN_USER_EMAILS[0], owner: true },
+    ...(data || []).filter(a => !ADMIN_USER_EMAILS.includes(a.email)).map(a => ({ ...a, owner: false }))
+  ];
+
+  list.innerHTML = allAdmins.map(a => `
+    <div class="admin-user-row">
+      <div class="admin-user-email">${a.email}</div>
+      <div style="display:flex;align-items:center;gap:8px">
+        ${a.owner ? '<span style="font-size:11px;color:var(--mid);font-weight:600">Owner</span>' :
+          `<button class="btn-delete-admin" onclick="removeAdmin('${a.id}','${a.email}')" title="Remove admin">✕ Remove</button>`}
+      </div>
+    </div>
+  `).join('');
+}
+
+async function addAdmin() {
+  const input = document.getElementById('new-admin-email');
+  const email = input.value.trim().toLowerCase();
+  if (!email || !email.includes('@')) { showToast('Enter a valid email address', false); return; }
+  if (ADMIN_USER_EMAILS.includes(email)) { showToast('That email is already an owner', false); return; }
+
+  const { error } = await _sb.from('admins').insert([{ email }]);
+  if (error) {
+    if (error.code === '23505') { showToast('That email is already an admin', false); }
+    else { showToast('Error: ' + error.message, false); }
+    return;
+  }
+
+  // Update live session so they're recognised immediately
+  if (!ADMIN_USER_EMAILS.includes(email)) ADMIN_USER_EMAILS.push(email);
+  input.value = '';
+  showToast('✓ Admin added', true);
+  await loadAdmins();
+}
+
+async function removeAdmin(id, email) {
+  if (!confirm(`Remove admin access for ${email}?`)) return;
+  const { error } = await _sb.from('admins').delete().eq('id', id);
+  if (error) { showToast('Error: ' + error.message, false); return; }
+  const idx = ADMIN_USER_EMAILS.indexOf(email);
+  if (idx > -1) ADMIN_USER_EMAILS.splice(idx, 1);
+  showToast('Admin removed', false);
+  await loadAdmins();
+}
+
+async function adminDeleteListing(id, address) {
+  const confirmed = confirm(`Permanently delete this listing?\n\n"${address}"\n\nThis cannot be undone.`);
+  if (!confirmed) return;
+  try {
+    const { error } = await _sb.from('listings').delete().eq('id', id);
+    if (error) throw error;
+    showToast('Listing permanently deleted', false);
     await loadAdminListings();
     await refreshListings();
   } catch (e) {

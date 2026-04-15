@@ -13,7 +13,7 @@ async function handlePaymentReturn() {
   if (payment === 'success') {
     const listingId = sessionStorage.getItem('paidListingId');
     if (listingId && typeof _sb !== 'undefined' && _sb) {
-      await _sb.from('listings').update({ payment_paid: true }).eq('id', listingId);
+      await _sb.from('listings').update({ is_active: true, payment_paid: true }).eq('id', listingId);
     }
     sessionStorage.removeItem('paidListingId');
     showToast('🎉 Payment received! Your listing is live.', true);

@@ -24,6 +24,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   );
 
   await initAuth();
+
+  // Load extra admins from DB into ADMIN_USER_EMAILS
+  try {
+    const { data: adminRows } = await _sb.from('admins').select('email');
+    (adminRows || []).forEach(a => {
+      if (!ADMIN_USER_EMAILS.includes(a.email)) ADMIN_USER_EMAILS.push(a.email);
+    });
+  } catch (e) { /* table may not exist yet */ }
+
   await refreshListings();
   if (currentUser) await loadSavedIds();
   if (currentUser) { await loadNotifications(); subscribeToNotifications(); }

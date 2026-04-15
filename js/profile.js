@@ -201,11 +201,12 @@ async function openMyListings() {
 async function deleteListing(id) {
   if (!confirm('Are you sure you want to delete this listing?')) return;
   if (typeof _sb !== 'undefined' && _sb) {
-    await _sb.from('listings').update({ is_active: false }).eq('id', id).eq('user_id', currentUser.id);
+    const { error } = await _sb.from('listings').delete().eq('id', id).eq('user_id', currentUser.id);
+    if (error) { showToast('Error deleting listing: ' + error.message, false); return; }
   }
   const idx = sampleListings.findIndex(l => String(l.id) === String(id));
   if (idx > -1) sampleListings.splice(idx, 1);
-  showToast('Listing removed', false);
+  showToast('Listing deleted', false);
   closeModal('my-listings');
   await refreshListings();
 }
@@ -248,7 +249,8 @@ async function saveAccountSettings() {
   };
 
   if (typeof _sb !== 'undefined' && _sb) {
-    await _sb.from('profiles').upsert({ id: currentUser.id, ...updates });
+    const { error: profileError } = await _sb.from('profiles').upsert({ id: currentUser.id, ...updates });
+    if (profileError) { showToast('Error saving: ' + profileError.message, false); return; }
     if (password) {
       const { error } = await _sb.auth.updateUser({ password });
       if (error) { showToast('Password error: ' + error.message, false); return; }

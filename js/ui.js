@@ -19,7 +19,10 @@ function switchPage(page) {
   });
   if (page === 'map') { if (typeof renderMap === 'function') renderMap(); }
   if (page === 'saved') { if (typeof renderSavedPage === 'function') renderSavedPage(); }
-  if (page === 'admin') { if (typeof loadAdminListings === 'function') loadAdminListings(); }
+  if (page === 'admin') {
+    if (typeof loadAdminListings === 'function') loadAdminListings();
+    if (typeof loadAdmins === 'function') loadAdmins();
+  }
 }
 
 // ---- MODALS ----

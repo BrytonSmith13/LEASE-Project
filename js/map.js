@@ -146,11 +146,11 @@ function selectMapListing(id) {
     if (_gmap) {
       _gmap.setCenter({ lat: l.lat, lng: l.lng });
       _gmap.setZoom(16);
-      // Shift map right so pin appears in left portion, away from popup
-      setTimeout(() => _gmap && _gmap.panBy(-120, 40), 50);
+      // Nudge pin right so it sits clear of the left-side popup
+      setTimeout(() => _gmap && _gmap.panBy(160, 0), 50);
     } else if (leafletMap) {
       leafletMap.setView([l.lat, l.lng], 16);
-      setTimeout(() => leafletMap && leafletMap.panBy([-120, 40]), 50);
+      setTimeout(() => leafletMap && leafletMap.panBy([160, 0]), 50);
     }
   }
 

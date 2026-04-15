@@ -12,8 +12,8 @@ async function loadListings() {
     id: l.id,
     user_id: l.user_id,
     emoji: '🏠',
-    photo: l.photo_url || null,
-    photos: l.photo_urls || (l.photo_url ? [l.photo_url] : []),
+    photos: Array.isArray(l.photo_urls) && l.photo_urls.length > 0 ? l.photo_urls : (l.photo_url ? [l.photo_url] : []),
+    photo: l.photo_url || (Array.isArray(l.photo_urls) && l.photo_urls.length > 0 ? l.photo_urls[0] : null),
     type: l.type,
     housingType: l.housing_type,
     address: l.address,
@@ -22,6 +22,7 @@ async function loadListings() {
     lng: l.lng,
     rent: l.rent,
     transferFee: l.transfer_fee || 0,
+    feeResponsibility: l.fee_responsibility || '',
     utilities: l.utilities || 0,
     internet: l.internet || 0,
     parkingFee: l.parking_fee || 0,
@@ -55,6 +56,7 @@ async function postListingToDB(formData) {
     school: formData.school,
     rent: formData.rent,
     transfer_fee: formData.transferFee,
+    fee_responsibility: formData.feeResponsibility || null,
     utilities: formData.utilities,
     internet: formData.internet,
     parking_fee: formData.parkingFee || 0,
@@ -433,6 +435,7 @@ async function openListing(id) {
         <div class="fee-row"><span>Parking</span><span>${l.parkingFee ? '$' + l.parkingFee + '/mo' : 'Included'}</span></div>
         ${l.extras ? `<div class="fee-row"><span>Other</span><span>${l.extras}</span></div>` : ''}
         ${l.transferFee > 0 ? `<div class="fee-row"><span>Transfer Fee (one-time)</span><span>$${l.transferFee}</span></div>` : ''}
+        ${l.feeResponsibility ? `<div class="fee-row"><span>Transfer Fee Paid By</span><span>${l.feeResponsibility === 'seller' ? 'Seller' : 'Buyer'}</span></div>` : ''}
         <div class="fee-row" style="margin-top:4px"><span>Est. Monthly Total</span><span style="color:var(--accent);font-weight:600">~$${totalEst}/mo</span></div>
       </div>
       ${l.desc ? `<p style="font-size:13px;color:var(--mid);margin-bottom:24px;line-height:1.7">${l.desc}</p>` : ''}
@@ -555,9 +558,9 @@ async function uploadListingPhotos(listingId) {
   for (let i = 0; i < uploadedPhotos.length; i++) {
     const file = uploadedPhotos[i];
     const ext = file.name.split('.').pop().toLowerCase();
-    const path = listingId + '/' + i + '_' + Date.now() + '.' + ext;
+    const path = currentUser.id + '/' + listingId + '/' + i + '_' + Date.now() + '.' + ext;
     const { error } = await _sb.storage.from('listing-photos').upload(path, file, { upsert: true, contentType: file.type });
-    if (error) { console.warn('Photo upload error:', error.message); continue; }
+    if (error) { console.warn('Photo upload error:', error.message); showToast('Photo upload failed: ' + error.message, false); continue; }
     const { data } = _sb.storage.from('listing-photos').getPublicUrl(path);
     urls.push(data.publicUrl);
   }
@@ -586,6 +589,7 @@ async function editListing(id) {
   document.getElementById('post-housing').value = l.housing_type || 'coed';
   document.getElementById('post-rent').value = l.rent || '';
   document.getElementById('post-fee').value = l.transfer_fee || 0;
+  document.getElementById('post-fee-responsibility').value = l.fee_responsibility || '';
   document.getElementById('post-utilities').value = l.utilities || 0;
   document.getElementById('post-internet').value = l.internet || 0;
   document.getElementById('post-parking-fee').value = l.parking_fee || 0;
@@ -628,6 +632,7 @@ async function postListing() {
     school: document.getElementById('post-school').value || 'Other',
     rent: parseInt(rent),
     transferFee: parseInt(document.getElementById('post-fee').value) || 0,
+    feeResponsibility: document.getElementById('post-fee-responsibility').value || '',
     utilities: parseInt(document.getElementById('post-utilities')?.value) || 0,
     internet: parseInt(document.getElementById('post-internet')?.value) || 0,
     parkingFee: parseInt(document.getElementById('post-parking-fee')?.value) || 0,
@@ -661,6 +666,7 @@ async function postListing() {
       school: listingData.school,
       rent: listingData.rent,
       transfer_fee: listingData.transferFee,
+      fee_responsibility: listingData.feeResponsibility || null,
       utilities: listingData.utilities,
       internet: listingData.internet,
       parking_fee: listingData.parkingFee,
@@ -701,30 +707,35 @@ async function postListing() {
     showToast('✓ Listing updated!', true);
     await refreshListings();
   } else {
-    // INSERT new listing
-    const result = await postListingToDB({ ...listingData, is_active: true });
-    if (!result) { btn.textContent = 'Publish Listing'; btn.disabled = false; return; }
+    // INSERT new listing (inactive until payment)
+    try {
+      const result = await postListingToDB({ ...listingData, is_active: false });
+      if (!result) { btn.textContent = 'Publish Listing'; btn.disabled = false; return; }
 
-    btn.textContent = 'Uploading photos…';
-    const photoUrls = await uploadListingPhotos(result.id);
-    if (photoUrls.length > 0) {
-      await _sb.from('listings').update({ photo_url: photoUrls[0], photo_urls: photoUrls }).eq('id', result.id);
+      if (uploadedPhotos.length > 0) {
+        btn.textContent = 'Uploading photos…';
+        const photoUrls = await uploadListingPhotos(result.id);
+        if (photoUrls.length > 0) {
+          await _sb.from('listings').update({ photo_url: photoUrls[0], photo_urls: photoUrls }).eq('id', result.id);
+        }
+      }
+
+      closeModal('post');
+      uploadedPhotos = [];
+      document.getElementById('photo-preview-row').style.display = 'none';
+      document.getElementById('upload-label').textContent = 'Click to upload photos';
+
+      sessionStorage.setItem('paidListingId', result.id);
+      showToast('Listing saved! Taking you to payment…', true);
+      setTimeout(() => {
+        window.location.href = 'https://buy.stripe.com/test_3cI9AV2zKcza1VcekC6kg00?client_reference_id=' + (currentUser.id || '') + '_listing_' + result.id;
+      }, 1200);
+    } catch (e) {
+      console.error('postListing error:', e);
+      showToast('Error saving listing: ' + e.message, false);
+      btn.textContent = 'Publish Listing';
+      btn.disabled = false;
     }
-
-    btn.textContent = 'Publish Listing';
-    btn.disabled = false;
-
-    closeModal('post');
-    uploadedPhotos = [];
-    document.getElementById('photo-preview-row').style.display = 'none';
-    document.getElementById('upload-label').textContent = 'Click to upload photos';
-    await refreshListings();
-
-    sessionStorage.setItem('paidListingId', result.id);
-    showToast('Listing saved! Redirecting to payment…', true);
-    setTimeout(() => {
-      window.location.href = 'https://buy.stripe.com/test_3cI9AV2zKcza1VcekC6kg00?client_reference_id=' + (currentUser.id || '') + '_listing_' + result.id;
-    }, 1200);
   }
 }
 

@@ -552,6 +552,22 @@ function removePhoto(thumbEl) {
   }
 }
 
+function removeExistingPhoto(thumbEl) {
+  const idx = parseInt(thumbEl.dataset.existingIdx);
+  existingPhotoUrls.splice(idx, 1);
+  const previewRow = document.getElementById('photo-preview-row');
+  previewRow.removeChild(thumbEl);
+  // Re-index remaining existing thumbs
+  Array.from(previewRow.querySelectorAll('[data-existing-idx]')).forEach((t, i) => t.dataset.existingIdx = i);
+  const total = existingPhotoUrls.length + uploadedPhotos.length;
+  if (total === 0) {
+    previewRow.style.display = 'none';
+    document.getElementById('upload-label').textContent = 'Click to upload photos';
+  } else {
+    document.getElementById('upload-label').textContent = total + ' photo(s)';
+  }
+}
+
 async function uploadListingPhotos(listingId) {
   if (!uploadedPhotos.length) return [];
   const urls = [];
@@ -601,6 +617,29 @@ async function editListing(id) {
   document.getElementById('post-start').value = l.lease_start || '';
   document.getElementById('post-end').value = l.lease_end || '';
   document.getElementById('post-desc').value = l.description || '';
+
+  // Reset and pre-load existing photos
+  uploadedPhotos = [];
+  existingPhotoUrls = Array.isArray(l.photo_urls) && l.photo_urls.length > 0
+    ? [...l.photo_urls]
+    : (l.photo_url ? [l.photo_url] : []);
+
+  const previewRow = document.getElementById('photo-preview-row');
+  previewRow.innerHTML = '';
+  if (existingPhotoUrls.length > 0) {
+    previewRow.style.display = 'flex';
+    existingPhotoUrls.forEach((url, i) => {
+      const thumb = document.createElement('div');
+      thumb.className = 'photo-thumb';
+      thumb.dataset.existingIdx = i;
+      thumb.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:6px"><button class="photo-thumb-remove" onclick="removeExistingPhoto(this.parentNode)">✕</button>`;
+      previewRow.appendChild(thumb);
+    });
+    document.getElementById('upload-label').textContent = existingPhotoUrls.length + ' photo(s)';
+  } else {
+    previewRow.style.display = 'none';
+    document.getElementById('upload-label').textContent = 'Click to upload photos';
+  }
 
   // Update modal title and button
   document.querySelector('#post-overlay .modal-title').textContent = 'Edit Listing';
@@ -685,13 +724,17 @@ async function postListing() {
       zip_code: listingData.zip,
     }).eq('id', editId).eq('user_id', currentUser.id);
 
+    // Upload any new photos and combine with kept existing ones
+    let newPhotoUrls = [];
     if (uploadedPhotos.length > 0) {
       btn.textContent = 'Uploading photos…';
-      const photoUrls = await uploadListingPhotos(editId);
-      if (photoUrls.length > 0) {
-        await _sb.from('listings').update({ photo_url: photoUrls[0], photo_urls: photoUrls }).eq('id', editId);
-      }
+      newPhotoUrls = await uploadListingPhotos(editId);
     }
+    const allPhotoUrls = [...existingPhotoUrls, ...newPhotoUrls];
+    await _sb.from('listings').update({
+      photo_url: allPhotoUrls[0] || null,
+      photo_urls: allPhotoUrls.length > 0 ? allPhotoUrls : null
+    }).eq('id', editId);
 
     btn.textContent = 'Save Changes';
     btn.disabled = false;
@@ -701,6 +744,7 @@ async function postListing() {
 
     closeModal('post');
     uploadedPhotos = [];
+    existingPhotoUrls = [];
     document.getElementById('photo-preview-row').style.display = 'none';
     document.getElementById('upload-label').textContent = 'Click to upload photos';
     if (error) { showToast('Error saving: ' + error.message, false); return; }
@@ -722,6 +766,7 @@ async function postListing() {
 
       closeModal('post');
       uploadedPhotos = [];
+      existingPhotoUrls = [];
       document.getElementById('photo-preview-row').style.display = 'none';
       document.getElementById('upload-label').textContent = 'Click to upload photos';
 

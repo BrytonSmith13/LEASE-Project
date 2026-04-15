@@ -19,6 +19,7 @@ let activeHousingType = '';
 
 // Photo upload state
 let uploadedPhotos = [];
+let existingPhotoUrls = []; // tracks already-saved photos when editing
 
 // UI state
 let toastTimer;

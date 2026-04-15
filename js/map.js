@@ -141,13 +141,16 @@ function selectMapListing(id) {
   const popup = document.getElementById('map-popup');
   if (!popup || !l) return;
 
-  // Center and zoom map to listing
+  // Center and zoom map to listing, offset left so pin isn't behind popup
   if (l.lat && l.lng) {
     if (_gmap) {
       _gmap.setCenter({ lat: l.lat, lng: l.lng });
       _gmap.setZoom(16);
+      // Shift map right so pin appears in left portion, away from popup
+      setTimeout(() => _gmap && _gmap.panBy(160, 0), 50);
     } else if (leafletMap) {
       leafletMap.setView([l.lat, l.lng], 16);
+      setTimeout(() => leafletMap && leafletMap.panBy([160, 0]), 50);
     }
   }
 

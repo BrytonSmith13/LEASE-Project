@@ -111,6 +111,8 @@ function resetNavForGuest() {
   const profileWrap = document.getElementById('nav-profile-wrap');
   if (loginBtn) loginBtn.style.display = '';
   if (profileWrap) profileWrap.style.display = 'none';
+  const adminBtn = document.getElementById('nav-admin');
+  if (adminBtn) adminBtn.style.display = 'none';
   updateNotifWrap(false);
   // Show landing hero and populate count
   const gh = document.getElementById('guest-hero');

@@ -5,16 +5,38 @@ async function initAuth() {
   if (session) {
     currentUser = session.user;
     await loadProfile(currentUser.id);
+    // Create profile for first-time OAuth users
+    if (!currentProfile) {
+      const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '';
+      await _sb.from('profiles').upsert({ id: currentUser.id, name, email: currentUser.email });
+      await loadProfile(currentUser.id);
+    }
     updateNavForUser();
     showAdminNav();
   } else {
     resetNavForGuest();
   }
 
-  // Listen for auth changes — only respond to SIGNED_OUT
-  // logIn() and signUp() handle their own nav updates directly
   _sb.auth.onAuthStateChange(async (event, session) => {
-    if (event === 'SIGNED_OUT') {
+    if (event === 'SIGNED_IN' && session) {
+      const provider = session.user.app_metadata?.provider;
+      // Only handle OAuth here; email/password sign-ins are handled by logIn()/signUp()
+      if (provider && provider !== 'email') {
+        currentUser = session.user;
+        await loadProfile(currentUser.id);
+        if (!currentProfile) {
+          const name = currentUser.user_metadata?.full_name || currentUser.user_metadata?.name || '';
+          await _sb.from('profiles').upsert({ id: currentUser.id, name, email: currentUser.email });
+          await loadProfile(currentUser.id);
+        }
+        await loadSavedIds();
+        updateNavForUser();
+        showAdminNav();
+        closeModal('auth');
+        showToast('✓ Logged in!', true);
+        await refreshListings();
+      }
+    } else if (event === 'SIGNED_OUT') {
       currentUser = null;
       currentProfile = null;
       savedIds = new Set();
@@ -98,6 +120,23 @@ async function logOut() {
   closeDropdown();
   switchPage('listings');
   showToast('Logged out', false);
+}
+
+// ---- OAUTH ----
+async function signInWithGoogle() {
+  const { error } = await _sb.auth.signInWithOAuth({
+    provider: 'google',
+    options: { redirectTo: window.location.origin + window.location.pathname }
+  });
+  if (error) showToast(error.message, false);
+}
+
+async function signInWithApple() {
+  const { error } = await _sb.auth.signInWithOAuth({
+    provider: 'apple',
+    options: { redirectTo: window.location.origin + window.location.pathname }
+  });
+  if (error) showToast(error.message, false);
 }
 
 // ---- FORGOT PASSWORD ----

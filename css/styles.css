@@ -298,7 +298,13 @@ textarea { resize: vertical; min-height: 80px; }
 .toast.success { background: var(--green); }
 
 /* TABS */
-.modal-tabs { display: flex; gap: 0; margin-bottom: 28px; border-bottom: 1px solid var(--rule); }
+.modal-tabs { display: flex; gap: 0; margin-bottom: 20px; border-bottom: 1px solid var(--rule); }
+.auth-social { display: flex; flex-direction: column; gap: 10px; margin-bottom: 18px; }
+.btn-social { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 500; font-family: inherit; cursor: pointer; transition: all 0.15s; border: 1.5px solid var(--rule); background: var(--surface); color: var(--ink); }
+.btn-social:hover { border-color: var(--ink); background: var(--tag-bg); }
+.btn-social svg { flex-shrink: 0; }
+.auth-divider { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; color: var(--mid); font-size: 12px; }
+.auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--rule); }
 .modal-tab { padding: 10px 20px; font-size: 14px; font-weight: 400; color: var(--mid); cursor: pointer; border: none; background: none; font-family: inherit; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.15s; }
 .modal-tab.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 500; }
 

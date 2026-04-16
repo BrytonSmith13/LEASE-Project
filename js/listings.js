@@ -808,6 +808,8 @@ async function refreshListings() {
   listings.forEach(l => sampleListings.push(l));
   renderListings(sampleListings);
   document.getElementById('stat-listings').textContent = sampleListings.length;
+  const mapPage = document.getElementById('page-map');
+  if (mapPage && mapPage.style.display !== 'none' && typeof renderMap === 'function') renderMap();
 }
 
 // ---- GALLERY ----

@@ -35,7 +35,7 @@ async function loadChatMessages() {
   if (!currentChatListingId || !currentUser) return;
 
   const { data, error } = await _sb
-    .from('messages')
+    .from('chat_messages')
     .select('*')
     .eq('listing_id', currentChatListingId)
     .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
@@ -57,7 +57,7 @@ async function loadChatMessages() {
 
   // Mark messages as read (non-critical, ignore errors)
   try {
-    await _sb.from('messages')
+    await _sb.from('chat_messages')
       .update({ is_read: true })
       .eq('listing_id', currentChatListingId)
       .eq('receiver_id', currentUser.id);
@@ -97,7 +97,7 @@ async function sendChatMsg() {
 
   input.value = '';
 
-  const { error } = await _sb.from('messages').insert([{
+  const { error } = await _sb.from('chat_messages').insert([{
     listing_id: currentChatListingId,
     sender_id: currentUser.id,
     receiver_id: currentChatReceiverId,
@@ -130,7 +130,7 @@ async function openInbox() {
 
   // Get all messages involving this user, grouped by listing
   const { data, error } = await _sb
-    .from('messages')
+    .from('chat_messages')
     .select('*, listings(id, address, photo_url)')
     .or(`sender_id.eq.${currentUser.id},receiver_id.eq.${currentUser.id}`)
     .order('created_at', { ascending: false });

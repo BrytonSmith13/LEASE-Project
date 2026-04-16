@@ -97,15 +97,17 @@ async function sendChatMsg() {
 
   input.value = '';
 
-  const { error } = await _sb.from('chat_messages').insert([{
+  const msgData = {
     listing_id: currentChatListingId,
     sender_id: currentUser.id,
-    receiver_id: currentChatReceiverId,
     content,
-  }]);
+  };
+  if (currentChatReceiverId) msgData.receiver_id = currentChatReceiverId;
+
+  const { error } = await _sb.from('chat_messages').insert([msgData]);
 
   if (error) {
-    console.error('Message send error:', error);
+    console.error('Message send error:', error.message, error.details, error.hint, error.code);
     showToast('Failed to send: ' + error.message, false);
     input.value = content;
     return;
